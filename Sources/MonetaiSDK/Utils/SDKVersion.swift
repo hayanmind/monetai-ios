@@ -4,12 +4,12 @@ import Foundation
 public struct SDKVersion {
     /// Returns the current SDK version
     public static func getVersion() -> String {
-        // Get version information from Bundle
+        // Try to get version from Bundle info (works for both platforms)
         if let version = Bundle(for: MonetaiSDK.self).infoDictionary?["CFBundleShortVersionString"] as? String {
             return version
         }
         
-        // Return default value
-        return "1.0.0"
+        // Fallback version - this should match the version in podspec and git tag
+        return "0.0.0"
     }
 } 
