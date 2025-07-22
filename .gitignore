@@ -59,12 +59,21 @@ playground.xcworkspace
 # Add this line if you want to avoid checking in source code from the Xcode workspace
 # *.xcworkspace
 
+# CocoaPods generated files (for example projects)
+Examples/*/Pods/
+Examples/*/Podfile.lock
+Examples/*/*.xcworkspace
+
 # Carthage
 #
 # Add this line if you want to avoid checking in source code from Carthage dependencies.
 # Carthage/Checkouts
 
 Carthage/Build/
+
+# Carthage generated files (for example projects)
+Examples/*/Carthage/
+Examples/*/Cartfile.resolved
 
 # Accio dependency management
 Dependencies/
