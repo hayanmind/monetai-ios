@@ -10,17 +10,12 @@ if [ $# -eq 0 ]; then
 fi
 
 NEW_VERSION=$1
-BUILD_NUMBER=${2:-1}
 
-echo "Updating SDK version to $NEW_VERSION (build $BUILD_NUMBER)..."
+echo "Updating SDK version to $NEW_VERSION..."
 
 # Update podspec version
 echo "Updating MonetaiSDK.podspec..."
 sed -i '' "s/spec.version      = \"[^\"]*\"/spec.version      = \"$NEW_VERSION\"/" MonetaiSDK.podspec
-
-# Update SDKVersion.swift fallback version
-echo "Updating SDKVersion.swift fallback version..."
-sed -i '' "s/return \"[^\"]*\"/return \"$NEW_VERSION\"/" Sources/MonetaiSDK/Utils/SDKVersion.swift
 
 echo "Note: For Swift Package Manager, create git tag: git tag v$NEW_VERSION"
 

@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
   spec.name         = "MonetaiSDK"
-  spec.version      = "1.0.0"
+  spec.version      = "1.0.0-beta.1"
   spec.summary      = "MonetAI iOS SDK for predictive user analytics and monetization"
   spec.description  = <<-DESC
                       MonetAI iOS SDK provides powerful predictive analytics to help you understand
