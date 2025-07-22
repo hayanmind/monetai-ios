@@ -1,0 +1,24 @@
+{
+  "originHash" : "36e9086845b1f86e134892bb865356ea5fbe7ec4c9cc55bc4c2d83d01448ce86",
+  "pins" : [
+    {
+      "identity" : "alamofire",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Alamofire/Alamofire.git",
+      "state" : {
+        "revision" : "513364f870f6bfc468f9d2ff0a95caccc10044c5",
+        "version" : "5.10.2"
+      }
+    },
+    {
+      "identity" : "purchases-ios-spm",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/RevenueCat/purchases-ios-spm.git",
+      "state" : {
+        "revision" : "fa196fa767b15663ff8941a0a80e3ad67ad4d53f",
+        "version" : "5.33.0"
+      }
+    }
+  ],
+  "version" : 3
+}
