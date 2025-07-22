@@ -71,9 +71,7 @@ Examples/*/*.xcworkspace
 
 Carthage/Build/
 
-# Carthage generated files (for example projects)
-Examples/*/Carthage/
-Examples/*/Cartfile.resolved
+
 
 # Accio dependency management
 Dependencies/

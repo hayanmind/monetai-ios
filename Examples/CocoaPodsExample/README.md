@@ -181,4 +181,3 @@ monetaiSDK.onDiscountInfoChange = { discount in
 For more integration options, check out:
 
 - [Swift Package Manager Example](../SwiftPackageManagerExample/)
-- [Carthage Example](../CarthageExample/)

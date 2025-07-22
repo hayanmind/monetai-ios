@@ -52,27 +52,6 @@ Discover hidden app revenue from non-purchasing users using AI-powered iOS Nativ
    import MonetaiSDK
    ```
 
-### Carthage
-
-1. Add MonetaiSDK to your `Cartfile`:
-
-   ```
-   github "hayanmind/monetai-ios"
-   ```
-
-2. Run carthage update:
-
-   ```bash
-   carthage update --platform iOS
-   ```
-
-3. Link the framework to your project and add run script phase
-
-4. Import the framework:
-   ```swift
-   import MonetaiSDK
-   ```
-
 ## Usage
 
 ### 1. SDK Initialization
@@ -367,7 +346,6 @@ Check out the complete example apps in the `Examples/` directory:
 
 - **Swift Package Manager Example**: `Examples/SwiftPackageManagerExample/`
 - **CocoaPods Example**: `Examples/CocoaPodsExample/`
-- **Carthage Example**: `Examples/CarthageExample/`
 
 Each example demonstrates:
 

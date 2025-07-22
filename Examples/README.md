@@ -26,26 +26,15 @@ This directory contains example projects demonstrating how to integrate MonetAI 
 
 [📖 View CocoaPods Example →](CocoaPodsExample/)
 
-### 🏛 Carthage Example
-
-**Location**: `CarthageExample/`
-
-- Decentralized dependency manager
-- Binary framework distribution
-- Manual framework linking
-- Demonstrates StoreKit 2 integration
-
-[📖 View Carthage Example →](CarthageExample/)
-
 ## Quick Comparison
 
-| Feature                   | Swift Package Manager | CocoaPods | Carthage |
-| ------------------------- | --------------------- | --------- | -------- |
-| **Ease of Setup**         | ⭐⭐⭐⭐⭐            | ⭐⭐⭐⭐  | ⭐⭐⭐   |
-| **Xcode Integration**     | Native                | Workspace | Manual   |
-| **Build Time**            | Fast                  | Medium    | Fast     |
-| **Dependency Resolution** | Automatic             | Automatic | Manual   |
-| **Community Support**     | Growing               | Mature    | Stable   |
+| Feature                   | Swift Package Manager | CocoaPods |
+| ------------------------- | --------------------- | --------- |
+| **Ease of Setup**         | ⭐⭐⭐⭐⭐            | ⭐⭐⭐⭐  |
+| **Xcode Integration**     | Native                | Workspace |
+| **Build Time**            | Fast                  | Medium    |
+| **Dependency Resolution** | Automatic             | Automatic |
+| **Community Support**     | Growing               | Mature    |
 
 ## Common Features Demonstrated
 
@@ -66,7 +55,6 @@ All examples include:
 
 - **New projects**: Use Swift Package Manager
 - **Existing CocoaPods projects**: Use CocoaPods example
-- **Binary distribution preference**: Use Carthage example
 
 ### 2. Clone and Setup
 
@@ -78,7 +66,6 @@ cd monetai-ios/Examples
 # Choose your example and follow its README
 cd SwiftPackageManagerExample/  # For Swift Package Manager
 cd CocoaPodsExample/     # For CocoaPods
-cd CarthageExample/      # For Carthage
 ```
 
 ### 3. Configuration
@@ -136,13 +123,6 @@ dependencies: [
 pod 'MonetaiSDK'
 ```
 
-#### Carthage
-
-```
-# Cartfile
-github "hayanmind/monetai-ios"
-```
-
 ## Prerequisites
 
 All examples require:
@@ -162,12 +142,6 @@ Already included in Xcode - no additional installation needed.
 
 ```bash
 sudo gem install cocoapods
-```
-
-### Carthage
-
-```bash
-brew install carthage
 ```
 
 ## Key SDK Features Demonstrated
