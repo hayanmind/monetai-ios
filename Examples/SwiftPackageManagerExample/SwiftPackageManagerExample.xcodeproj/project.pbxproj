@@ -347,13 +347,6 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCLocalSwiftPackageReference section */
-		2FA5DB882E2F1FC300E373C6 /* XCLocalSwiftPackageReference "../../../monetai-ios" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = "../../../monetai-ios";
-		};
-/* End XCLocalSwiftPackageReference section */
-
 /* Begin XCRemoteSwiftPackageReference section */
 		2F14CEF02E2E06F400E54C0C /* XCRemoteSwiftPackageReference "purchases-ios-spm" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -361,6 +354,14 @@
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 5.33.0;
+			};
+		};
+		2FA5DB882E2F1FC300E373C6 /* XCRemoteSwiftPackageReference "monetai-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/hayanmind/monetai-ios.git";
+			requirement = {
+				kind = exactVersion;
+				version = 1.0.0-beta.1;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -378,14 +379,17 @@
 		};
 		2F9B1B0C2E2F4CE700DAB787 /* MonetaiSDK */ = {
 			isa = XCSwiftPackageProductDependency;
+			package = 2FA5DB882E2F1FC300E373C6 /* XCRemoteSwiftPackageReference "monetai-ios" */;
 			productName = MonetaiSDK;
 		};
 		2F9B1B0E2E2F4CFE00DAB787 /* MonetaiSDK */ = {
 			isa = XCSwiftPackageProductDependency;
+			package = 2FA5DB882E2F1FC300E373C6 /* XCRemoteSwiftPackageReference "monetai-ios" */;
 			productName = MonetaiSDK;
 		};
 		2FA5DB892E2F1FC300E373C6 /* MonetaiSDK */ = {
 			isa = XCSwiftPackageProductDependency;
+			package = 2FA5DB882E2F1FC300E373C6 /* XCRemoteSwiftPackageReference "monetai-ios" */;
 			productName = MonetaiSDK;
 		};
 /* End XCSwiftPackageProductDependency section */

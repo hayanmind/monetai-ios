@@ -6,8 +6,8 @@ use_frameworks!
 project 'CocoaPodsExample.xcodeproj'
 
 target 'CocoaPodsExample' do
-  # MonetAI SDK via CocoaPods
-  pod 'MonetaiSDK', :path => '../../'
+  # MonetAI SDK via CocoaPods from remote repository
+  pod 'MonetaiSDK', '1.0.0-beta.1'
   
   # RevenueCat integration
   pod 'RevenueCat'
