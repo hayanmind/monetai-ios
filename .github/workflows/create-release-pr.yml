@@ -86,6 +86,8 @@ jobs:
           fi
 
       - name: Create Pull Request
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           VERSION=${{ steps.version.outputs.version }}
           BRANCH_NAME="release/$VERSION"
