@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  # Code quality check
+  swiftlint:
+    name: SwiftLint
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Swift
+        uses: swift-actions/setup-swift@v1
+        with:
+          swift-version: "5.9"
+
+      - name: Run SwiftLint
+        run: |
+          swift run swiftlint lint --reporter github-actions-logging
+
+  # Build and test for iOS
+  build-ios:
+    name: Build iOS
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        xcode: ["15.0", "15.1", "15.2"]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: ${{ matrix.xcode }}
+
+      - name: Build Package
+        run: |
+          swift build -Xswiftc -sdk -Xswiftc $(xcrun --sdk iphonesimulator --show-sdk-path) -Xswiftc -target -Xswiftc x86_64-apple-ios15.0-simulator
+
+      - name: Test Package
+        run: |
+          swift test -Xswiftc -sdk -Xswiftc $(xcrun --sdk iphonesimulator --show-sdk-path) -Xswiftc -target -Xswiftc x86_64-apple-ios15.0-simulator
+
+  # CocoaPods validation
+  cocoapods:
+    name: CocoaPods Validation
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.2"
+          bundler-cache: true
+
+      - name: Install CocoaPods
+        run: |
+          gem install cocoapods
+          pod --version
+
+      - name: Validate Podspec
+        run: |
+          pod lib lint MonetaiSDK.podspec --allow-warnings --verbose
