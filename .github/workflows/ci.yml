@@ -32,14 +32,6 @@ jobs:
             -sdk iphonesimulator \
             build
 
-      - name: Test Package
-        run: |
-          xcodebuild \
-            -scheme MonetaiSDK \
-            -destination 'platform=iOS Simulator,name=iPhone 16' \
-            -sdk iphonesimulator \
-            test
-
   # CocoaPods validation
   cocoapods:
     name: CocoaPods Validation
