@@ -7,37 +7,29 @@ This document explains how to update the SDK version across different distributi
 The SDK version is managed in the following files:
 
 1. **MonetaiSDK.podspec** - CocoaPods version
-2. **Sources/MonetaiSDK/Utils/SDKVersion.swift** - Fallback version
-3. **Git tags** - Swift Package Manager version
+2. **Sources/MonetaiSDK/Utils/SDKVersion.swift** - SDK runtime version (hardcoded)
+3. **.version** - Version tracking file
 
-## Automatic Version Update
+## Automatic Version Update (Recommended)
 
 Use the provided script to update all version locations at once:
 
 ```bash
 # Update to version 1.1.0
 ./scripts/update_version.sh 1.1.0
-
-# Update to version 1.1.0 with build number 2
-./scripts/update_version.sh 1.1.0 2
 ```
+
+This script automatically updates:
+
+- `.version` file
+- `MonetaiSDK.podspec` version
+- `Sources/MonetaiSDK/Utils/SDKVersion.swift` hardcoded version
 
 ## Manual Version Update
 
 If you prefer to update versions manually, follow these steps:
 
-### 1. Swift Package Manager
-
-Swift Package Manager uses Git tags for versioning. No changes needed in `Package.swift`.
-
-To create a new version:
-
-```bash
-git tag v1.1.0
-git push origin v1.1.0
-```
-
-### 2. CocoaPods
+### 1. CocoaPods
 
 Update `MonetaiSDK.podspec`:
 
@@ -49,54 +41,35 @@ Pod::Spec.new do |spec|
 end
 ```
 
-### 3. SDKVersion.swift
+### 2. SDKVersion.swift
 
-Update the fallback version in `Sources/MonetaiSDK/Utils/SDKVersion.swift`:
+Update the hardcoded version in `Sources/MonetaiSDK/Utils/SDKVersion.swift`:
 
 ```swift
-return "1.1.0"  // Update version fallback
+public static func getVersion() -> String {
+    return "1.1.0"  # Update this line
+}
 ```
 
-## Release Process
+### 3. .version file
 
-After updating the version:
+Update the `.version` file in the project root:
 
-1. **Commit changes**:
-
-   ```bash
-   git add .
-   git commit -m "Bump version to 1.1.0"
-   ```
-
-2. **Create and push tag**:
-
-   ```bash
-   git tag v1.1.0
-   git push origin v1.1.0
-   ```
-
-3. **Publish to CocoaPods** (if applicable):
-   ```bash
-   pod trunk push MonetaiSDK.podspec
-   ```
+```bash
+echo "1.1.0" > .version
+```
 
 ## Version Format
 
 - Use semantic versioning: `MAJOR.MINOR.PATCH`
 - Examples: `1.0.0`, `1.1.0`, `2.0.0`
-- Build numbers are optional and can be used for internal builds
+- Pre-release versions: `1.0.0-beta.5`, `1.0.0-rc.1`
 
-## Platform-Specific Notes
+## How SDK Version is Used
 
-### Swift Package Manager
+The SDK version is automatically sent to the server during SDK initialization:
 
-- Version is managed via compile-time constants in `Package.swift`
-- Users specify version in their `Package.swift` dependencies
-- No separate publishing process required
-
-### CocoaPods
-
-- Version is managed via compile-time constants in `podspec`
-- Version must match git tag
-- Requires publishing to CocoaPods trunk
-- Users specify version in their `Podfile`
+1. **SDK Initialization**: `MonetaiSDK.shared.initialize()` is called
+2. **Version Retrieval**: `SDKVersion.getVersion()` returns the hardcoded version
+3. **API Request**: Version is included in the `/sdk-integrations` API call
+4. **Database Storage**: Version is stored in the database for tracking
