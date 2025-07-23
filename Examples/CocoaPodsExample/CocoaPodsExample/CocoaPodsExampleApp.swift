@@ -2,7 +2,7 @@
 //  CocoaPodsExampleApp.swift
 //  CocoaPodsExample
 //
-//  MonetAI iOS SDK CocoaPods Integration Example
+//  Monetai iOS SDK CocoaPods Integration Example
 //
 
 import SwiftUI

@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  # Build and test for iOS
+  build-ios:
+    name: Build iOS
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        xcode: ["15.0"]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: ${{ matrix.xcode }}
+
+      - name: Build Package
+        run: |
+          xcodebuild \
+            -scheme MonetaiSDK \
+            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            -sdk iphonesimulator \
+            build
+
+  # CocoaPods validation
+  cocoapods:
+    name: CocoaPods Validation
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.2"
+          bundler-cache: true
+
+      - name: Install CocoaPods
+        run: |
+          gem install cocoapods
+          pod --version
+
+      - name: Validate Podspec
+        run: |
+          pod lib lint MonetaiSDK.podspec

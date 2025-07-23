@@ -2,7 +2,7 @@ import Foundation
 import Alamofire
 
 /// API client class
-class APIClient {
+final class APIClient: Sendable {
     static let shared = APIClient()
     
     private let baseURL = "https://monetai-api-414410537412.us-central1.run.app/sdk"
@@ -19,11 +19,12 @@ class APIClient {
         self.decoder = JSONDecoder()
         
         // Support for ISO 8601 format with milliseconds
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         self.decoder.dateDecodingStrategy = .custom { decoder in
             let container = try decoder.singleValueContainer()
             let dateString = try container.decode(String.self)
+            
+            let formatter = ISO8601DateFormatter()
+            formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
             
             if let date = formatter.date(from: dateString) {
                 return date
