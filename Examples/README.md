@@ -26,6 +26,18 @@ This directory contains example projects demonstrating how to integrate MonetAI 
 
 [📖 View CocoaPods Example →](CocoaPodsExample/)
 
+### 🎯 Simple App Example
+
+**Location**: `SimpleApp/`
+
+- Minimal UIKit-based example
+- Basic SDK integration demonstration
+- Clean and straightforward implementation
+- Perfect for understanding core SDK features
+- Manual dependency management
+
+[📖 View Simple App Example →](SimpleApp/)
+
 ## Quick Comparison
 
 | Feature                   | Swift Package Manager | CocoaPods |
