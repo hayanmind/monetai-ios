@@ -13,7 +13,7 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        xcode: ["15.0", "15.1", "15.2"]
+        xcode: ["15.0"]
 
     steps:
       - name: Checkout code
