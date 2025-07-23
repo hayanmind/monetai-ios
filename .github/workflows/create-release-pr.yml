@@ -71,7 +71,7 @@ jobs:
       - name: Commit and push version update
         run: |
           VERSION=${{ steps.version.outputs.version }}
-          git add MonetaiSDK.podspec
+          git add MonetaiSDK.podspec .version
           git commit -m "chore: bump version to $VERSION [skip ci]"
           git push origin ${{ github.ref }}
           echo "Pushed version update to release branch"

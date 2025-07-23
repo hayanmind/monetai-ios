@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e  # Exit on any error
 
 # Script to update SDK version across all platforms
 # Usage: ./scripts/update_version.sh <new_version>
@@ -19,7 +20,14 @@ echo "$NEW_VERSION" > .version
 
 # Update podspec version
 echo "Updating MonetaiSDK.podspec..."
-sed -i '' "s/spec.version      = \"[^\"]*\"/spec.version      = \"$NEW_VERSION\"/" MonetaiSDK.podspec
+# Use cross-platform sed command that works on both Linux and macOS
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS
+    sed -i '' "s/spec.version      = \"[^\"]*\"/spec.version      = \"$NEW_VERSION\"/" MonetaiSDK.podspec
+else
+    # Linux
+    sed -i "s/spec.version      = \"[^\"]*\"/spec.version      = \"$NEW_VERSION\"/" MonetaiSDK.podspec
+fi
 
 echo "Version updated successfully!"
 echo "Don't forget to:"
