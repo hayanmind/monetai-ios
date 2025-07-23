@@ -1,0 +1,106 @@
+name: Create Release PR
+
+on:
+  push:
+    branches:
+      - "release/*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version (e.g., 1.0.0)"
+        required: true
+        type: string
+
+jobs:
+  # Auto version bump, commit and create PR
+  auto-release:
+    name: Auto Version Bump & Create PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Setup Git
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+      - name: Extract version from branch name or input
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            VERSION=${{ inputs.version }}
+            echo "Using manual input version: $VERSION"
+          else
+            BRANCH_NAME=${GITHUB_REF#refs/heads/}
+            VERSION=${BRANCH_NAME#release/}
+            echo "Using version from branch: $VERSION"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Final version: $VERSION"
+
+      - name: Validate version format
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
+          if [[ ! $VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+(-beta\.[0-9]+)?$ ]]; then
+            echo "Invalid version format: $VERSION"
+            echo "Expected format: X.Y.Z or X.Y.Z-beta.N"
+            exit 1
+          fi
+          echo "Version format is valid: $VERSION"
+
+      - name: Create release branch (manual trigger only)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
+          BRANCH_NAME="release/$VERSION"
+          git checkout -b $BRANCH_NAME
+          git push origin $BRANCH_NAME
+          echo "Created and pushed branch: $BRANCH_NAME"
+
+      - name: Update version in podspec
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
+          chmod +x scripts/update_version.sh
+          ./scripts/update_version.sh $VERSION
+          echo "Updated podspec version to: $VERSION"
+
+      - name: Commit and push version update
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
+          git add MonetaiSDK.podspec
+          git commit -m "chore: bump version to $VERSION [skip ci]"
+          git push origin ${{ github.ref }}
+          echo "Pushed version update to release branch"
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref_name }}
+          base: main
+          title: "Release v${{ steps.version.outputs.version }}"
+          body: |
+            ## Release v${{ steps.version.outputs.version }}
+
+            ### Changes
+            - Bump version to ${{ steps.version.outputs.version }}
+
+            ### Checklist
+            - [ ] Version bump completed
+            - [ ] Ready for release
+
+            ### Next Steps
+            1. Review the changes
+            2. Merge this PR to trigger deployment
+            3. Deployment will automatically:
+               - Create git tag v${{ steps.version.outputs.version }}
+               - Deploy to CocoaPods
+               - Create GitHub Release
+          labels: |
+            release
+            version-bump
+          assignees: ${{ github.actor }}
