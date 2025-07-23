@@ -74,7 +74,7 @@ jobs:
         run: |
           VERSION=${{ steps.version.outputs.version }}
           git add MonetaiSDK.podspec .version
-          git commit -m "chore: bump version to $VERSION [skip ci]"
+          git commit -m "chore: bump version to $VERSION"
           # Use the created branch for manual trigger, otherwise use current branch
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
             BRANCH_NAME="release/$VERSION"
