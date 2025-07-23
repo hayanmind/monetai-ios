@@ -54,11 +54,13 @@ jobs:
 
       - name: Create release branch (manual trigger only)
         if: github.event_name == 'workflow_dispatch'
+        id: create_branch
         run: |
           VERSION=${{ steps.version.outputs.version }}
           BRANCH_NAME="release/$VERSION"
           git checkout -b $BRANCH_NAME
           git push origin $BRANCH_NAME
+          echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
           echo "Created and pushed branch: $BRANCH_NAME"
 
       - name: Update version in podspec
@@ -73,14 +75,21 @@ jobs:
           VERSION=${{ steps.version.outputs.version }}
           git add MonetaiSDK.podspec .version
           git commit -m "chore: bump version to $VERSION [skip ci]"
-          git push origin ${{ github.ref }}
-          echo "Pushed version update to release branch"
+          # Use the created branch for manual trigger, otherwise use current branch
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            BRANCH_NAME="release/$VERSION"
+            git push origin $BRANCH_NAME
+            echo "Pushed version update to new release branch: $BRANCH_NAME"
+          else
+            git push origin ${{ github.ref }}
+            echo "Pushed version update to existing release branch"
+          fi
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.ref_name }}
+          branch: ${{ github.event_name == 'workflow_dispatch' && format('release/{0}', inputs.version) || github.ref_name }}
           base: main
           title: "Release v${{ steps.version.outputs.version }}"
           body: |
