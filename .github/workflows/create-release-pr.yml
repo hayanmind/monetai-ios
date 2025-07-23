@@ -86,30 +86,32 @@ jobs:
           fi
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v5
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.event_name == 'workflow_dispatch' && format('release/{0}', inputs.version) || github.ref_name }}
-          base: main
-          title: "Release v${{ steps.version.outputs.version }}"
-          body: |
-            ## Release v${{ steps.version.outputs.version }}
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
+          BRANCH_NAME="release/$VERSION"
 
-            ### Changes
-            - Bump version to ${{ steps.version.outputs.version }}
+          # Create PR using GitHub CLI
+          gh pr create \
+            --head $BRANCH_NAME \
+            --base main \
+            --title "Release v$VERSION" \
+            --body "## Release v$VERSION
 
-            ### Checklist
-            - [ ] Version bump completed
-            - [ ] Ready for release
+          ### Changes
+          - Bump version to $VERSION
 
-            ### Next Steps
-            1. Review the changes
-            2. Merge this PR to trigger deployment
-            3. Deployment will automatically:
-               - Create git tag v${{ steps.version.outputs.version }}
-               - Deploy to CocoaPods
-               - Create GitHub Release
-          labels: |
-            release
-            version-bump
-          assignees: ${{ github.actor }}
+          ### Checklist
+          - [ ] Version bump completed
+          - [ ] Ready for release
+
+          ### Next Steps
+          1. Review the changes
+          2. Merge this PR to trigger deployment
+          3. Deployment will automatically:
+             - Create git tag v$VERSION
+             - Deploy to CocoaPods
+             - Create GitHub Release" \
+            --label "release,version-bump" \
+            --assignee ${{ github.actor }}
+
+          echo "Created PR for release v$VERSION"
