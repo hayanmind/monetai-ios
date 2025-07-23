@@ -70,4 +70,4 @@ jobs:
 
       - name: Validate Podspec
         run: |
-          pod lib lint MonetaiSDK.podspec --allow-warnings --verbose
+          pod lib lint MonetaiSDK.podspec
