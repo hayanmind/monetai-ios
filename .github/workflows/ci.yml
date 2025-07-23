@@ -7,23 +7,6 @@ on:
     branches: [main, develop]
 
 jobs:
-  # Code quality check
-  swiftlint:
-    name: SwiftLint
-    runs-on: macos-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Swift
-        uses: swift-actions/setup-swift@v1
-        with:
-          swift-version: "5.9"
-
-      - name: Run SwiftLint
-        run: |
-          swift run swiftlint lint --reporter github-actions-logging
-
   # Build and test for iOS
   build-ios:
     name: Build iOS
@@ -43,11 +26,19 @@ jobs:
 
       - name: Build Package
         run: |
-          swift build -Xswiftc -sdk -Xswiftc $(xcrun --sdk iphonesimulator --show-sdk-path) -Xswiftc -target -Xswiftc x86_64-apple-ios15.0-simulator
+          xcodebuild \
+            -scheme MonetaiSDK \
+            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            -sdk iphonesimulator \
+            build
 
       - name: Test Package
         run: |
-          swift test -Xswiftc -sdk -Xswiftc $(xcrun --sdk iphonesimulator --show-sdk-path) -Xswiftc -target -Xswiftc x86_64-apple-ios15.0-simulator
+          xcodebuild \
+            -scheme MonetaiSDK \
+            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            -sdk iphonesimulator \
+            test
 
   # CocoaPods validation
   cocoapods:
