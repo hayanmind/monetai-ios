@@ -1,6 +1,6 @@
-# MonetAI iOS SDK Examples
+# Monetai iOS SDK Examples
 
-This directory contains example projects demonstrating how to integrate MonetAI iOS SDK using different package managers and integration methods.
+This directory contains example projects demonstrating how to integrate Monetai iOS SDK using different package managers and integration methods.
 
 ## Available Examples
 
@@ -142,7 +142,7 @@ All examples require:
 - **Xcode**: 15.0 or later
 - **iOS**: 13.0 or later
 - **Swift**: 5.0 or later
-- **Valid SDK Key**: Obtain from MonetAI Dashboard
+- **Valid SDK Key**: Obtain from Monetai Dashboard
 
 ## Package Manager Installation
 

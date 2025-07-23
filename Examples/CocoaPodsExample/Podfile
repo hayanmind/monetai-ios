@@ -1,4 +1,4 @@
-# MonetAI iOS SDK CocoaPods Integration Example
+# Monetai iOS SDK CocoaPods Integration Example
 
 platform :ios, '16.0'
 use_frameworks!
@@ -6,7 +6,7 @@ use_frameworks!
 project 'CocoaPodsExample.xcodeproj'
 
 target 'CocoaPodsExample' do
-  # MonetAI SDK via CocoaPods from remote repository
+  # Monetai SDK via CocoaPods from remote repository
   pod 'MonetaiSDK', '1.0.0-beta.1'
   
   # RevenueCat integration

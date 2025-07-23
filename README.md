@@ -1,4 +1,4 @@
-# MonetAI iOS Native SDK
+# Monetai iOS Native SDK
 
 Discover hidden app revenue from non-purchasing users using AI-powered iOS Native SDK.
 
@@ -398,4 +398,4 @@ MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-Made with ❤️ by the MonetAI Team
+Made with ❤️ by the Monetai Team

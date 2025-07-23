@@ -1,10 +1,10 @@
 # Simple App Example
 
-A minimal UIKit-based example demonstrating the core features of MonetAI iOS SDK.
+A minimal UIKit-based example demonstrating the core features of Monetai iOS SDK.
 
 ## Overview
 
-SimpleApp is designed to be the most straightforward way to understand and integrate MonetAI SDK into your iOS application. It uses UIKit and manual dependency management, making it perfect for developers who want to see the SDK in action without the complexity of package managers.
+SimpleApp is designed to be the most straightforward way to understand and integrate Monetai SDK into your iOS application. It uses UIKit and manual dependency management, making it perfect for developers who want to see the SDK in action without the complexity of package managers.
 
 ## Features Demonstrated
 
@@ -40,11 +40,11 @@ git clone https://github.com/hayanmind/monetai-ios.git
 cd monetai-ios/Examples/SimpleApp
 ```
 
-### 2. Add MonetAI SDK
+### 2. Add Monetai SDK
 
 Since this example uses manual dependency management, you need to add the SDK manually:
 
-1. Download the latest MonetAI SDK framework
+1. Download the latest Monetai SDK framework
 2. Drag and drop `MonetaiSDK.framework` into your Xcode project
 3. Make sure "Copy items if needed" is checked
 4. Add the framework to your target's "Frameworks, Libraries, and Embedded Content"
