@@ -1,6 +1,6 @@
-# MonetAI iOS SDK - CocoaPods Example
+# Monetai iOS SDK - CocoaPods Example
 
-This example demonstrates how to integrate MonetAI iOS SDK using CocoaPods package manager.
+This example demonstrates how to integrate Monetai iOS SDK using CocoaPods package manager.
 
 ## Features Demonstrated
 
@@ -58,7 +58,7 @@ open CocoaPodsExample.xcworkspace
 
 1. Select a target device or simulator
 2. Press `Cmd + R` to build and run the app
-3. The app will automatically initialize the MonetAI SDK and display the status
+3. The app will automatically initialize the Monetai SDK and display the status
 4. Try different features:
    - Tap buttons to log events
    - Use "Predict User Behavior" to get AI predictions
@@ -66,7 +66,7 @@ open CocoaPodsExample.xcworkspace
 
 ## Integration Method
 
-This example uses CocoaPods to integrate MonetAI SDK:
+This example uses CocoaPods to integrate Monetai SDK:
 
 ### Podfile
 

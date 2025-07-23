@@ -51,7 +51,7 @@ struct ContentView: View {
                 }
                 .padding()
             }
-            .navigationTitle("MonetAI Example")
+            .navigationTitle("Monetai Example")
             .onAppear {
                 initializeSDKs()
                 setupDiscountInfoListener()
@@ -60,7 +60,7 @@ struct ContentView: View {
     }
     
     private func setupDiscountInfoListener() {
-        // Set up automatic discount information update callback for MonetAI SDK
+        // Set up automatic discount information update callback for Monetai SDK
         monetaiSDK.onDiscountInfoChange = { discount in
             Task { @MainActor in
                 if let discount = discount {
@@ -78,7 +78,7 @@ struct ContentView: View {
     // MARK: - Header Section
     private var headerSection: some View {
         VStack(spacing: 12) {
-            Text("MonetAI Example App")
+            Text("Monetai Example App")
                 .font(.title2)
                 .fontWeight(.bold)
                 .foregroundColor(.primary)
@@ -324,7 +324,7 @@ struct ContentView: View {
     // MARK: - MonetaiSDK Actions Section
     private var monetaiActionsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("MonetAI SDK Actions")
+            Text("Monetai SDK Actions")
                 .font(.headline)
                 .foregroundColor(.primary)
             
@@ -604,7 +604,7 @@ struct ContentView: View {
                     .build()
                 )
                 
-                print("🚀 [SDK] Starting MonetAI SDK initialization...")
+                print("🚀 [SDK] Starting Monetai SDK initialization...")
                 
                 // Initialize MonetaiSDK
                 let result = try await monetaiSDK.initialize(
@@ -613,12 +613,12 @@ struct ContentView: View {
                     useStoreKit2: useStoreKit2
                 )
                 
-                print("🎉 [SDK] MonetAI SDK initialization complete!")
+                print("🎉 [SDK] Monetai SDK initialization complete!")
                 
                 await MainActor.run {
                     isInitialized = true
                     initializationResult = """
-                    ✅ MonetAI SDK initialization successful!
+                    ✅ Monetai SDK initialization successful!
                     
                     📊 Initialization result:
                     • Organization ID: \(result.organizationId)
@@ -651,7 +651,7 @@ struct ContentView: View {
                 await MainActor.run {
                     isInitialized = false
                     initializationError = """
-                    ❌ MonetAI SDK initialization failed
+                    ❌ Monetai SDK initialization failed
 
                     🚨 Error details:
                     \(error.localizedDescription)

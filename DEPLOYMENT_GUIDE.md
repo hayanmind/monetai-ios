@@ -1,6 +1,6 @@
-# MonetAI iOS SDK - Deployment Guide
+# Monetai iOS SDK - Deployment Guide
 
-This guide explains how to deploy the MonetAI iOS SDK to make it available for public use across all three package managers.
+This guide explains how to deploy the Monetai iOS SDK to make it available for public use across all three package managers.
 
 ## 📋 Prerequisites
 
@@ -65,7 +65,7 @@ CocoaPods requires registration with **CocoaPods Trunk**.
 sudo gem install cocoapods
 
 # 2. Register with CocoaPods Trunk
-pod trunk register your-email@example.com 'Your Name' --description='MonetAI SDK'
+pod trunk register your-email@example.com 'Your Name' --description='Monetai SDK'
 # Check your email and click the verification link
 ```
 
@@ -116,7 +116,7 @@ git push origin 1.0.0
 # 2. Create GitHub Release (recommended)
 # Go to GitHub → Releases → Create new release
 # Tag: 1.0.0
-# Title: MonetAI iOS SDK v1.0.0
+# Title: Monetai iOS SDK v1.0.0
 # Description: Initial release
 
 # 3. Done! Users can now install
