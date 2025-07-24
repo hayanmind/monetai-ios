@@ -15,8 +15,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/hayanmind/monetai-ios.git",
       "state" : {
-        "revision" : "218289c1a92e76a0772d96405863876d63a46e71",
-        "version" : "1.0.0-beta.1"
+        "branch" : "main",
+        "revision" : "aa1a03a87a78f7ba7c6a37a119674e34d49c7518"
       }
     },
     {

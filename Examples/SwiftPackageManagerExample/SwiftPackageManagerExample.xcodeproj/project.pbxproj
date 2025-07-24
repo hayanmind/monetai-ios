@@ -9,8 +9,6 @@
 /* Begin PBXBuildFile section */
 		2F14CEF22E2E06F400E54C0C /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 2F14CEF12E2E06F400E54C0C /* RevenueCat */; };
 		2F14CEF42E2E06F400E54C0C /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 2F14CEF32E2E06F400E54C0C /* RevenueCatUI */; };
-		2F9B1B0D2E2F4CE700DAB787 /* MonetaiSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 2F9B1B0C2E2F4CE700DAB787 /* MonetaiSDK */; };
-		2F9B1B0F2E2F4CFE00DAB787 /* MonetaiSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 2F9B1B0E2E2F4CFE00DAB787 /* MonetaiSDK */; };
 		2FA5DB8A2E2F1FC300E373C6 /* MonetaiSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 2FA5DB892E2F1FC300E373C6 /* MonetaiSDK */; };
 /* End PBXBuildFile section */
 
@@ -31,10 +29,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2F9B1B0F2E2F4CFE00DAB787 /* MonetaiSDK in Frameworks */,
-				2F14CEF22E2E06F400E54C0C /* RevenueCat in Frameworks */,
-				2F9B1B0D2E2F4CE700DAB787 /* MonetaiSDK in Frameworks */,
 				2FA5DB8A2E2F1FC300E373C6 /* MonetaiSDK in Frameworks */,
+				2F14CEF22E2E06F400E54C0C /* RevenueCat in Frameworks */,
 				2F14CEF42E2E06F400E54C0C /* RevenueCatUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -81,8 +77,6 @@
 				2F14CEF12E2E06F400E54C0C /* RevenueCat */,
 				2F14CEF32E2E06F400E54C0C /* RevenueCatUI */,
 				2FA5DB892E2F1FC300E373C6 /* MonetaiSDK */,
-				2F9B1B0C2E2F4CE700DAB787 /* MonetaiSDK */,
-				2F9B1B0E2E2F4CFE00DAB787 /* MonetaiSDK */,
 			);
 			productName = SwiftPackageManagerExample;
 			productReference = 2F14CEDC2E2E050D00E54C0C /* SwiftPackageManagerExample.app */;
@@ -114,7 +108,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				2F14CEF02E2E06F400E54C0C /* XCRemoteSwiftPackageReference "purchases-ios-spm" */,
-				2FA5DB882E2F1FC300E373C6 /* XCLocalSwiftPackageReference "../../../monetai-ios" */,
+				2FA5DB882E2F1FC300E373C6 /* XCRemoteSwiftPackageReference "monetai-ios" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 2F14CEDD2E2E050D00E54C0C /* Products */;
@@ -360,8 +354,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/hayanmind/monetai-ios.git";
 			requirement = {
-				kind = exactVersion;
-				version = 1.0.0-beta.1;
+				branch = main;
+				kind = branch;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -377,16 +371,7 @@
 			package = 2F14CEF02E2E06F400E54C0C /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
 			productName = RevenueCatUI;
 		};
-		2F9B1B0C2E2F4CE700DAB787 /* MonetaiSDK */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 2FA5DB882E2F1FC300E373C6 /* XCRemoteSwiftPackageReference "monetai-ios" */;
-			productName = MonetaiSDK;
-		};
-		2F9B1B0E2E2F4CFE00DAB787 /* MonetaiSDK */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 2FA5DB882E2F1FC300E373C6 /* XCRemoteSwiftPackageReference "monetai-ios" */;
-			productName = MonetaiSDK;
-		};
+
 		2FA5DB892E2F1FC300E373C6 /* MonetaiSDK */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 2FA5DB882E2F1FC300E373C6 /* XCRemoteSwiftPackageReference "monetai-ios" */;

@@ -13,7 +13,7 @@ struct Constants {
     // Never commit real API keys to version control
     
     static let sdkKey = "your-sdk-key-here"
-    static let userId = "test-user-123"
+    static let userId = "example-user-id"
     
     // MARK: - App Configuration
     static let useStoreKit2 = true // Recommended: Use StoreKit 2

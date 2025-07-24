@@ -1,7 +1,7 @@
 # Monetai iOS SDK
 
-[![Version](https://img.shields.io/cocoapods/v/MonetaiSDK.svg?style=flat)](https://cocoapods.org/pods/MonetaiSDK)
 [![Platform](https://img.shields.io/cocoapods/p/MonetaiSDK.svg?style=flat)](https://cocoapods.org/pods/MonetaiSDK)
+[![Version](https://img.shields.io/cocoapods/v/MonetaiSDK.svg?style=flat)](https://cocoapods.org/pods/MonetaiSDK)
 [![SwiftPM Compatible](https://img.shields.io/badge/SwiftPM-Compatible-brightgreen.svg)](https://swift.org/package-manager/)
 [![License](https://img.shields.io/cocoapods/l/MonetaiSDK.svg?style=flat)](https://cocoapods.org/pods/MonetaiSDK)
 
