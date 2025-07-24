@@ -290,18 +290,27 @@
 
 - (void)predictButtonTapped {
     [[MonetaiSDK shared] predictWithCompletion:^(PredictResponse * _Nullable result, NSError * _Nullable error) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            if (error) {
+        if (error) {
+            dispatch_async(dispatch_get_main_queue(), ^{
                 self.resultLabel.text = [NSString stringWithFormat:@"❌ Prediction failed: %@", error.localizedDescription];
                 self.resultLabel.textColor = [UIColor systemRedColor];
-                NSLog(@"Prediction failed: %@", error.localizedDescription);
-            } else {
-                NSMutableString *resultText = [NSMutableString stringWithString:@"Prediction Result:\n"];
-                [resultText appendFormat:@"• Prediction: %@\n", result.predictionString ?: @"None"];
-                [resultText appendFormat:@"• Test Group: %@", result.testGroupString ?: @"None"];
-                
-                self.resultLabel.text = resultText;
-                self.resultLabel.textColor = [UIColor labelColor];
+            });
+            NSLog(@"Prediction failed: %@", error.localizedDescription);
+        } else {
+            NSLog(@"Prediction result: %@", result.predictionString ?: @"None");
+            NSLog(@"Test group: %@", result.testGroupString ?: @"None");
+
+            if ([result.predictionString isEqualToString:@"non-purchaser"]) {
+                // When predicted as non-purchaser, offer discount
+                NSLog(@"Predicted as non-purchaser - discount can be applied");
+            } else if ([result.predictionString isEqualToString:@"purchaser"]) {
+                // When predicted as purchaser
+                NSLog(@"Predicted as purchaser - discount not needed");
+            }
+            
+            dispatch_async(dispatch_get_main_queue(), ^{
+                self.resultLabel.text = @"✅ Prediction completed - check console for details";
+                self.resultLabel.textColor = [UIColor systemGreenColor];
                 
                 // Show alert with prediction result
                 UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Purchase Prediction"
@@ -313,11 +322,8 @@
                 UIAlertAction *okAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil];
                 [alert addAction:okAction];
                 [self presentViewController:alert animated:YES completion:nil];
-            }
-        });
-        
-        NSLog(@"Prediction result: %@", result.predictionString ?: @"None");
-        NSLog(@"Test group: %@", result.testGroupString ?: @"None");
+            });
+        }
     }];
 }
 
