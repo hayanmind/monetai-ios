@@ -7,6 +7,6 @@ public struct SDKVersion {
     /// Note: This version should be updated using the update_version.sh script
     /// to match the version in MonetaiSDK.podspec and .version file
     public static func getVersion() -> String {
-        return "1.0.1"
+        return "1.1.0"
     }
 } 
