@@ -9,7 +9,7 @@ Pod::Spec.new do |spec|
                    DESC
 
   spec.homepage     = "https://github.com/hayanmind/monetai-ios"
-  spec.license      = { :type => "MIT", :file => "LICENSE" }
+  spec.license      = { :type => "Apache-2.0", :file => "LICENSE" }
   spec.author       = { "Monetai" => "support@monetai.com" }
 
   spec.ios.deployment_target = "13.0"

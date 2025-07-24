@@ -42,7 +42,9 @@ Check out our example projects:
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This software is © 2025 HayanMind Inc.  
+This package is licensed under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).  
+See the [LICENSE](./LICENSE) file for details.
 
 ---
 
