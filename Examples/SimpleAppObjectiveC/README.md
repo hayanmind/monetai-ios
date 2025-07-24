@@ -1,81 +1,81 @@
 # SimpleAppObjectiveC
 
-MonetaiSDK를 사용하는 Objective-C 샘플 앱입니다.
+A sample Objective-C app demonstrating MonetaiSDK integration.
 
-## 개요
+## Overview
 
-이 프로젝트는 MonetaiSDK의 주요 기능들을 Objective-C로 구현한 예제입니다. Swift로 작성된 SimpleApp과 동일한 기능을 제공합니다.
+This project showcases the core features of MonetaiSDK implemented in Objective-C. It provides the same functionality as the Swift-based SimpleApp example, making it perfect for developers working with Objective-C codebases.
 
-## 주요 기능
+## Key Features
 
-- **SDK 초기화**: 앱 시작 시 MonetaiSDK 초기화
-- **구매 예측**: 사용자의 구매 가능성을 예측
-- **이벤트 로깅**: 사용자 행동 이벤트를 서버로 전송
-- **할인 배너**: 활성 할인이 있을 때 배너 표시
-- **실시간 상태 모니터링**: SDK 초기화 상태를 실시간으로 확인
+- **SDK Initialization**: Automatic SDK setup on app launch
+- **Purchase Prediction**: AI-powered user purchase probability prediction
+- **Event Logging**: Send user behavior events to the server
+- **Discount Banner**: Display active discount banners
+- **Real-time Status Monitoring**: Live SDK initialization status tracking
 
-## 프로젝트 구조
+## Project Structure
 
 ```
 SimpleAppObjectiveC/
 ├── SimpleAppObjectiveC/
-│   ├── AppDelegate.h/m          # 앱 델리게이트 및 SDK 초기화
-│   ├── ViewController.h/m       # 메인 뷰 컨트롤러
-│   ├── DiscountBannerView.h/m   # 할인 배너 뷰
-│   ├── Constants.h/m            # 설정 상수
-│   ├── SceneDelegate.h/m        # 씬 델리게이트
-│   └── main.m                   # 앱 진입점
-├── Podfile                      # CocoaPods 의존성 설정
-└── README.md                    # 프로젝트 설명
+│   ├── AppDelegate.h/m          # App delegate and SDK initialization
+│   ├── ViewController.h/m       # Main view controller
+│   ├── DiscountBannerView.h/m   # Discount banner view
+│   ├── Constants.h/m            # Configuration constants
+│   ├── SceneDelegate.h/m        # Scene delegate
+│   └── main.m                   # App entry point
+├── Podfile                      # CocoaPods dependency configuration
+└── README.md                    # Project documentation
 ```
 
-## 설정
+## Setup
 
-### 1. SDK 키 설정
+### 1. SDK Key Configuration
 
-`Constants.m` 파일에서 실제 SDK 키로 변경하세요:
+Update the SDK keys in `Constants.m` with your actual credentials:
 
 ```objc
 NSString * const kSDKKey = @"your-actual-sdk-key-here";
 NSString * const kUserId = @"your-user-id";
 ```
 
-### 2. 의존성 설치
+### 2. Install Dependencies
 
 ```bash
 cd Examples/SimpleAppObjectiveC
 pod install
 ```
 
-### 3. 프로젝트 실행
+### 3. Run the Project
 
-`SimpleAppObjectiveC.xcworkspace` 파일을 Xcode에서 열고 실행하세요.
+Open `SimpleAppObjectiveC.xcworkspace` in Xcode and run the project.
 
-## 사용법
+## Usage
 
-### SDK 초기화
+### SDK Initialization
 
-앱이 시작되면 자동으로 SDK가 초기화됩니다:
+The SDK is automatically initialized when the app starts:
 
 ```objc
-// AppDelegate.m에서 자동 초기화
+// Automatic initialization in AppDelegate.m
 InitializationResult *result = [[MonetaiSDK shared] initializeWithSdkKey:kSDKKey
                                                                   userId:kUserId
                                                            useStoreKit2:kUseStoreKit2
                                                                   error:nil];
 ```
 
-### 구매 예측
+### Purchase Prediction
 
-"Predict Purchase" 버튼을 탭하여 구매 예측을 실행할 수 있습니다:
+Tap the "Predict Purchase" button to run purchase prediction:
 
 ```objc
 PredictionResult *result = [[MonetaiSDK shared] predictAndReturnError:nil];
 ```
 
-### 이벤트 로깅
+### Event Logging
 
-"Log Event" 버튼을 탭하여 이벤트를 로깅할 수 있습니다:
+Tap the "Log Event" button to log test events:
 
 ```objc
 NSDictionary *params = @{
@@ -85,59 +85,73 @@ NSDictionary *params = @{
 [[MonetaiSDK shared] logEventWithEventName:@"button_click" params:params];
 ```
 
-### 할인 배너
+### Discount Banner
 
-활성 할인이 있을 때 자동으로 배너가 표시됩니다:
+Discount banners are automatically displayed when active discounts are available:
 
 ```objc
-// 할인 정보 변경 콜백
+// Discount information change callback
 [MonetaiSDK shared].onDiscountInfoChange = ^(AppUserDiscount * _Nullable discountInfo) {
-    // 할인 배너 표시/숨김 처리
+    // Handle discount banner display/hide
 };
 ```
 
-## UI 구성 요소
+## UI Components
 
-- **제목**: "MonetaiSDK Demo"
-- **상태 표시**: SDK 초기화 상태를 실시간으로 표시
-- **예측 버튼**: 구매 예측 기능 실행
-- **이벤트 로깅 버튼**: 테스트 이벤트 로깅
-- **할인 상태**: 현재 할인 정보 표시
-- **결과 표시**: 작업 결과를 텍스트로 표시
-- **할인 배너**: 활성 할인이 있을 때 하단에 표시
+- **Title**: "MonetaiSDK Demo"
+- **Status Display**: Real-time SDK initialization status
+- **Prediction Button**: Execute purchase prediction functionality
+- **Event Logging Button**: Log test events
+- **Discount Status**: Display current discount information
+- **Result Display**: Show operation results as text
+- **Discount Banner**: Display at bottom when active discounts exist
 
-## 알림 시스템
+## Notification System
 
-SDK 초기화 상태를 알림으로 전달합니다:
+SDK initialization status is delivered through notifications:
 
 ```objc
-// 초기화 성공
+// Initialization success
 [[NSNotificationCenter defaultCenter] postNotificationName:kMonetaiSDKInitializedNotification object:nil];
 
-// 초기화 실패
+// Initialization failure
 [[NSNotificationCenter defaultCenter] postNotificationName:kMonetaiSDKInitializationFailedNotification object:error];
 ```
 
-## 주의사항
+## Important Notes
 
-1. **SDK 키 보안**: 실제 SDK 키를 버전 관리에 포함하지 마세요
-2. **에러 처리**: 네트워크 오류나 SDK 초기화 실패에 대한 적절한 처리가 필요합니다
-3. **메모리 관리**: Objective-C에서는 메모리 누수를 방지하기 위해 weak 참조를 적절히 사용하세요
+1. **SDK Key Security**: Do not include actual SDK keys in version control
+2. **Error Handling**: Implement proper handling for network errors and SDK initialization failures
+3. **Memory Management**: Use weak references appropriately to prevent memory leaks in Objective-C
 
-## 문제 해결
+## Troubleshooting
 
-### 빌드 오류
+### Build Errors
 
-1. `pod install`을 실행했는지 확인
-2. `.xcworkspace` 파일을 사용하고 있는지 확인
-3. MonetaiSDK 프레임워크가 올바르게 링크되었는지 확인
+1. Ensure `pod install` has been executed
+2. Verify you're using the `.xcworkspace` file
+3. Check that MonetaiSDK framework is properly linked
 
-### 런타임 오류
+### Runtime Errors
 
-1. SDK 키가 올바른지 확인
-2. 네트워크 연결 상태 확인
-3. 콘솔 로그에서 오류 메시지 확인
+1. Verify SDK key is correct
+2. Check network connectivity
+3. Review console logs for error messages
 
-## 라이선스
+## Requirements
 
-이 프로젝트는 MonetaiSDK의 샘플 코드입니다.
+- **Xcode**: 15.0 or later
+- **iOS**: 13.0 or later
+- **CocoaPods**: For dependency management
+- **Valid SDK Key**: Obtain from Monetai Dashboard
+
+## Getting Help
+
+- 📖 [Main SDK Documentation](../../README.md)
+- 🐛 [GitHub Issues](https://github.com/hayanmind/monetai-ios/issues)
+- 📧 [Email Support](mailto:support@monetai.io)
+- 🌐 [Online Documentation](https://docs.monetai.io)
+
+## License
+
+This project is a sample code for MonetaiSDK.
