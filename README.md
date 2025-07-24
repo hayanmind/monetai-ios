@@ -19,7 +19,7 @@ AI-powered iOS SDK to discover hidden app revenue from non-paying users.
 
 Ready to integrate Monetai SDK into your app? Check out our comprehensive documentation:
 
-📚 **[Complete Integration Guide](https://docs.monetai.io/getting-started)**
+📚 **[Complete Integration Guide](https://docs.monetai.io)**
 
 ## Requirements
 
