@@ -1,11 +1,11 @@
 import Foundation
 
 /// Model representing app user discount information
-public struct AppUserDiscount: Codable {
-    public let startedAt: Date
-    public let endedAt: Date
-    public let appUserId: String
-    public let sdkKey: String
+@objc public class AppUserDiscount: NSObject, Codable {
+    @objc public let startedAt: Date
+    @objc public let endedAt: Date
+    @objc public let appUserId: String
+    @objc public let sdkKey: String
     
     enum CodingKeys: String, CodingKey {
         case startedAt = "started_at"
@@ -14,10 +14,20 @@ public struct AppUserDiscount: Codable {
         case sdkKey = "sdk_key"
     }
     
-    public init(startedAt: Date, endedAt: Date, appUserId: String, sdkKey: String) {
+    @objc public init(startedAt: Date, endedAt: Date, appUserId: String, sdkKey: String) {
         self.startedAt = startedAt
         self.endedAt = endedAt
         self.appUserId = appUserId
         self.sdkKey = sdkKey
+        super.init()
+    }
+    
+    // Custom description for better logging
+    public override var description: String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateStyle = .short
+        dateFormatter.timeStyle = .short
+        
+        return "AppUserDiscount(startedAt: \(dateFormatter.string(from: startedAt)), endedAt: \(dateFormatter.string(from: endedAt)), appUserId: \"\(appUserId)\", sdkKey: \"\(sdkKey)\")"
     }
 } 

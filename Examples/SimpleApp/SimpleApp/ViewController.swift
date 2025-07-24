@@ -279,8 +279,8 @@ class ViewController: UIViewController {
                 
                 await MainActor.run {
                     var resultText = "Prediction Result:\n"
-                    resultText += "• Prediction: \(result.prediction?.rawValue ?? "None")\n"
-                    resultText += "• Test Group: \(result.testGroup?.rawValue ?? "None")"
+                    resultText += "• Prediction: \(result.prediction?.stringValue ?? "None")\n"
+                    resultText += "• Test Group: \(result.testGroup?.stringValue ?? "None")"
                     
                     resultLabel.text = resultText
                     resultLabel.textColor = UIColor.label
@@ -288,15 +288,15 @@ class ViewController: UIViewController {
                     // Show alert with prediction result
                     let alert = UIAlertController(
                         title: "Purchase Prediction",
-                        message: "Prediction: \(result.prediction?.rawValue ?? "None")\nTest Group: \(result.testGroup?.rawValue ?? "None")",
+                        message: "Prediction: \(result.prediction?.stringValue ?? "None")\nTest Group: \(result.testGroup?.stringValue ?? "None")",
                         preferredStyle: .alert
                     )
                     alert.addAction(UIAlertAction(title: "OK", style: .default))
                     present(alert, animated: true)
                 }
                 
-                print("Prediction result:", result.prediction)
-                print("Test group:", result.testGroup)
+                print("Prediction result:", result.prediction?.stringValue ?? "None")
+                print("Test group:", result.testGroup?.stringValue ?? "None")
                 
             } catch {
                 await MainActor.run {

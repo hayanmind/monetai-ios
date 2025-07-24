@@ -114,7 +114,7 @@
 			mainGroup = 2F0260D42E30796D00D9FFFA;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				2F0260F52E307A1100D9FFFA /* XCRemoteSwiftPackageReference "monetai-ios" */,
+				2F0260F52E307A1100D9FFFA /* XCLocalSwiftPackageReference "monetai-ios" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 2F0260DE2E30796D00D9FFFA /* Products */;
@@ -345,21 +345,17 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCRemoteSwiftPackageReference section */
-		2F0260F52E307A1100D9FFFA /* XCRemoteSwiftPackageReference "monetai-ios" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/hayanmind/monetai-ios.git";
-			requirement = {
-				branch = main;
-				kind = branch;
-			};
+/* Begin XCLocalSwiftPackageReference section */
+		2F0260F52E307A1100D9FFFA /* XCLocalSwiftPackageReference "monetai-ios" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../../;
 		};
-/* End XCRemoteSwiftPackageReference section */
+/* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
 		2F0260F62E307A1100D9FFFA /* MonetaiSDK */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 2F0260F52E307A1100D9FFFA /* XCRemoteSwiftPackageReference "monetai-ios" */;
+			package = 2F0260F52E307A1100D9FFFA /* XCLocalSwiftPackageReference "monetai-ios" */;
 			productName = MonetaiSDK;
 		};
 /* End XCSwiftPackageProductDependency section */

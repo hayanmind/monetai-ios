@@ -1,5 +1,5 @@
 //
-//  ViewController.h
+//  DiscountBannerView.h
 //  SimpleAppObjectiveC
 //
 //  Created by Daehoon Kim on 7/24/25.
@@ -10,9 +10,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ViewController : UIViewController
+@interface DiscountBannerView : UIView
+
+- (void)showDiscount:(AppUserDiscount *)discount;
+- (void)hideDiscount;
 
 @end
 
-NS_ASSUME_NONNULL_END
-
+NS_ASSUME_NONNULL_END 
