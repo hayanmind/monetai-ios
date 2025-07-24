@@ -114,7 +114,7 @@
 			mainGroup = 2F0260D42E30796D00D9FFFA;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				2F0260F52E307A1100D9FFFA /* XCLocalSwiftPackageReference "monetai-ios" */,
+				2F0260F52E307A1100D9FFFA /* XCRemoteSwiftPackageReference "monetai-ios" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 2F0260DE2E30796D00D9FFFA /* Products */;
@@ -359,7 +359,7 @@
 /* Begin XCSwiftPackageProductDependency section */
 		2F0260F62E307A1100D9FFFA /* MonetaiSDK */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 2F0260F52E307A1100D9FFFA /* XCLocalSwiftPackageReference "monetai-ios" */;
+			package = 2F0260F52E307A1100D9FFFA /* XCRemoteSwiftPackageReference "monetai-ios" */;
 			productName = MonetaiSDK;
 		};
 /* End XCSwiftPackageProductDependency section */
