@@ -155,7 +155,6 @@ monetaiSDK.onDiscountInfoChange = { discount in
 2. **Build errors**
 
    - Check iOS deployment target (should be 13.0+)
-   - Ensure Swift version is 5.0+
    - Try running `pod update`
 
 3. **SDK initialization fails**
@@ -168,13 +167,6 @@ monetaiSDK.onDiscountInfoChange = { discount in
 - Check the main [README](../../README.md) for general information
 - Review the [API Reference](../../README.md#api-reference)
 - Open an issue on [GitHub](https://github.com/hayanmind/monetai-ios/issues)
-
-## Next Steps
-
-- Implement user prediction in your purchase flow
-- Set up event logging for key user actions
-- Configure discount UI based on prediction results
-- Test with different user scenarios
 
 ---
 

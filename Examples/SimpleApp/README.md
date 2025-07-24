@@ -198,15 +198,6 @@ The app includes comprehensive logging:
 - Event logging confirmations
 - Error messages with details
 
-## Next Steps
-
-After exploring SimpleApp:
-
-1. **Understand the Core API**: Review the SDK methods used
-2. **Customize for Your App**: Adapt the implementation to your needs
-3. **Add More Features**: Implement additional SDK capabilities
-4. **Choose a Package Manager**: Consider Swift Package Manager or CocoaPods for production
-
 ## Related Examples
 
 - [Swift Package Manager Example](../SwiftPackageManagerExample/) - Modern SwiftUI implementation

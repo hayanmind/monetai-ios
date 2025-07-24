@@ -22,7 +22,7 @@ This directory contains example projects demonstrating how to integrate Monetai 
 
 - Advanced integration method using Swift Package Manager
 - Native Xcode support with SwiftUI
-- **RevenueCat integration for purchase functionality**
+- RevenueCat integration for purchase functionality
 - Complete production-ready example
 
 [📖 View Swift Package Manager Example →](SwiftPackageManagerExample/)
@@ -33,7 +33,7 @@ This directory contains example projects demonstrating how to integrate Monetai 
 
 - Traditional iOS dependency manager
 - SwiftUI with RevenueCat integration
-- **RevenueCat integration for purchase functionality**
+- RevenueCat integration for purchase functionality
 - Easy setup with Podfile
 - Demonstrates StoreKit integration
 
@@ -56,7 +56,6 @@ All examples demonstrate:
 - ✅ Event logging with parameters
 - ✅ AI-powered user prediction
 - ✅ Discount management and real-time updates
-- ✅ A/B testing support
 - ✅ Error handling
 
 **Advanced Examples (Swift Package Manager & CocoaPods) additionally include:**
@@ -69,7 +68,6 @@ All examples demonstrate:
 
 - **Xcode**: 15.0 or later
 - **iOS**: 13.0 or later
-- **Swift**: 5.0 or later
 - **Valid SDK Key**: Obtain from Monetai Dashboard
 
 ## Getting Help

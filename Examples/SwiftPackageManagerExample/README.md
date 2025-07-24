@@ -40,6 +40,7 @@ The project uses Swift Package Manager for dependency management. Dependencies a
 
 1. Open `Constants.swift`
 2. Update the SDK key and user ID with your own values:
+
    ```swift
    struct Constants {
        // MARK: - MonetaiSDK Configuration
@@ -167,7 +168,6 @@ let customerInfo = try await Purchases.shared.purchase(package: package)
 2. **Build errors**
 
    - Check iOS deployment target (should be 13.0+)
-   - Ensure Swift version is 5.0+
    - Verify package dependencies are up to date
 
 3. **SDK initialization fails**
@@ -180,14 +180,6 @@ let customerInfo = try await Purchases.shared.purchase(package: package)
 - Check the main [README](../../README.md) for general information
 - Review the [API Reference](../../README.md#api-reference)
 - Open an issue on [GitHub](https://github.com/hayanmind/monetai-ios/issues)
-
-## Next Steps
-
-- Implement user prediction in your purchase flow
-- Set up event logging for key user actions
-- Configure discount UI based on prediction results
-- Test with different user scenarios
-- Integrate with your own RevenueCat setup
 
 ---
 
