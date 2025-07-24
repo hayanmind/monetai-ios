@@ -6,8 +6,8 @@ target 'SimpleAppObjectiveC' do
   use_frameworks!
 
   # Pods for SimpleAppObjectiveC
-  # Local MonetaiSDK pod
-  pod 'MonetaiSDK', :path => '../../'
+  # Remote MonetaiSDK pod
+  pod 'MonetaiSDK'
   
   # Add other dependencies if needed
   # pod 'Alamofire', '~> 5.8'

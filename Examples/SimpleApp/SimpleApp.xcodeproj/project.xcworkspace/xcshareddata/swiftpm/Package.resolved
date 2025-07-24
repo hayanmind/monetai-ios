@@ -1,5 +1,5 @@
 {
-  "originHash" : "6443fae7349548a403816d29bbcbf2f8494fca6da580ff925c9f7a45ce0016fa",
+  "originHash" : "179dd372f2000ef9f7d44954e4ec2740b1b5a0cbf94faa38f6707445007a8fd1",
   "pins" : [
     {
       "identity" : "alamofire",
@@ -16,7 +16,7 @@
       "location" : "https://github.com/hayanmind/monetai-ios.git",
       "state" : {
         "branch" : "main",
-        "revision" : "aa1a03a87a78f7ba7c6a37a119674e34d49c7518"
+        "revision" : "5734fbf46eca56af1d9a35f54b68da8dbbe41173"
       }
     }
   ],
