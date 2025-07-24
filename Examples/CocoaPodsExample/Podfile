@@ -7,7 +7,7 @@ project 'CocoaPodsExample.xcodeproj'
 
 target 'CocoaPodsExample' do
   # Monetai SDK via CocoaPods from remote repository
-  pod 'MonetaiSDK', '1.0.0'
+  pod 'MonetaiSDK'
   
   # RevenueCat integration
   pod 'RevenueCat'
