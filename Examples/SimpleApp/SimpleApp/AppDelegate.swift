@@ -13,8 +13,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         
+        // Log test event before SDK initialization to check pending events
+        print("🔍 Testing pending events - logging test event before SDK init")
+        
         // Initialize Monetai SDK
         Task {
+            // Log test event before SDK initialization to check pending events
+            await MonetaiSDK.shared.logEvent(eventName: "test_pending_event", params: ["test": "pending_event_check"])
+            
             do {
                 let result = try await MonetaiSDK.shared.initialize(
                     sdkKey: Constants.sdkKey,

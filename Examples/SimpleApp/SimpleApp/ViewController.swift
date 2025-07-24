@@ -276,27 +276,31 @@ class ViewController: UIViewController {
         Task {
             do {
                 let result = try await MonetaiSDK.shared.predict()
+
+                print("Prediction result:", result.prediction?.stringValue ?? "None")
+                print("Test group:", result.testGroup?.stringValue ?? "None")
+
+                if result.prediction == .nonPurchaser {
+                    // When predicted as non-purchaser, offer discount
+                    print("Predicted as non-purchaser - discount can be applied")
+                } else if result.prediction == .purchaser {
+                    // When predicted as purchaser
+                    print("Predicted as purchaser - discount not needed")
+                }
                 
                 await MainActor.run {
-                    var resultText = "Prediction Result:\n"
-                    resultText += "• Prediction: \(result.prediction?.rawValue ?? "None")\n"
-                    resultText += "• Test Group: \(result.testGroup?.rawValue ?? "None")"
-                    
-                    resultLabel.text = resultText
-                    resultLabel.textColor = UIColor.label
+                    resultLabel.text = "✅ Prediction completed - check console for details"
+                    resultLabel.textColor = UIColor.systemGreen
                     
                     // Show alert with prediction result
                     let alert = UIAlertController(
                         title: "Purchase Prediction",
-                        message: "Prediction: \(result.prediction?.rawValue ?? "None")\nTest Group: \(result.testGroup?.rawValue ?? "None")",
+                        message: "Prediction: \(result.prediction?.stringValue ?? "None")\nTest Group: \(result.testGroup?.stringValue ?? "None")",
                         preferredStyle: .alert
                     )
                     alert.addAction(UIAlertAction(title: "OK", style: .default))
                     present(alert, animated: true)
                 }
-                
-                print("Prediction result:", result.prediction)
-                print("Test group:", result.testGroup)
                 
             } catch {
                 await MainActor.run {

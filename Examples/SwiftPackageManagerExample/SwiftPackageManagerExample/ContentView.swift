@@ -625,7 +625,7 @@ struct ContentView: View {
                     • Platform: \(result.platform)
                     • Version: \(result.version)
                     • User ID: \(result.userId)
-                    • Test Group: \(result.group?.rawValue ?? "None")
+                    • Test Group: \(result.group?.stringValue ?? "None")
                     
                     🎯 Status: Ready
                     🧪 Pending Events: 3 events before initialization sent automatically
@@ -636,7 +636,7 @@ struct ContentView: View {
                 // Log initialization event (sent immediately after SDK initialization)
                 await monetaiSDK.logEvent(eventName: "monetai_initialized", params: [
                     "initialization_time": Date().timeIntervalSince1970,
-                    "test_group": result.group?.rawValue ?? "none"
+                    "test_group": result.group?.stringValue ?? "none"
                 ])
                 
                 // Load products
@@ -763,7 +763,7 @@ struct ContentView: View {
         do {
             let result = try await monetaiSDK.predict()
             await MainActor.run {
-                predictionResult = result.prediction?.rawValue ?? "Unknown"
+                predictionResult = result.prediction?.stringValue ?? "Unknown"
                 isLoading = false
             }
             

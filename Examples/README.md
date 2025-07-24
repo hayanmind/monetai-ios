@@ -38,6 +38,18 @@ This directory contains example projects demonstrating how to integrate Monetai 
 
 [📖 View CocoaPods Example →](CocoaPodsExample/)
 
+### 📱 Objective-C Example
+
+**Location**: `SimpleAppObjectiveC/`
+
+- Objective-C implementation of core SDK features
+- UIKit-based interface with CocoaPods
+- Same functionality as Swift SimpleApp
+- Perfect for Objective-C codebases
+- Demonstrates SDK integration in Objective-C
+
+[📖 View Objective-C Example →](SimpleAppObjectiveC/)
+
 ## Quick Start
 
 1. **Start with SimpleApp** - Understand basic SDK functionality first
@@ -62,6 +74,12 @@ All examples demonstrate:
 - ✅ RevenueCat integration for subscription management
 - ✅ In-app purchase functionality
 - ✅ StoreKit integration
+
+**Objective-C Example includes:**
+
+- ✅ UIKit-based interface
+- ✅ Objective-C SDK integration patterns
+- ✅ Memory management best practices
 
 ## Prerequisites
 

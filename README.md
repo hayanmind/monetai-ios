@@ -28,11 +28,9 @@ Ready to integrate Monetai SDK into your app? Check out our comprehensive docume
 
 ## Examples
 
-Check out our example projects:
+Check out our comprehensive example projects demonstrating different integration methods:
 
-- [Swift Package Manager Example](Examples/SwiftPackageManagerExample/)
-- [CocoaPods Example](Examples/CocoaPodsExample/)
-- [Simple App Example](Examples/SimpleApp/)
+📱 **[View All Examples →](Examples/)**
 
 ## Support
 

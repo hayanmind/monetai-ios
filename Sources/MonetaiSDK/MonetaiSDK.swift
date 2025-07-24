@@ -2,36 +2,37 @@ import Foundation
 import Combine
 
 /// Struct representing event logging options
-public struct LogEventOptions {
-    public let eventName: String
-    public let params: [String: Any]?
-    public let createdAt: Date
+@objc public class LogEventOptions: NSObject {
+    @objc public let eventName: String
+    @objc public let params: [String: Any]?
+    @objc public let createdAt: Date
     
-    public init(eventName: String, params: [String: Any]? = nil, createdAt: Date = Date()) {
+    @objc public init(eventName: String, params: [String: Any]? = nil, createdAt: Date = Date()) {
         self.eventName = eventName
         self.params = params
         self.createdAt = createdAt
+        super.init()
     }
 }
 
 /// Event logging convenience initializer methods
 public extension LogEventOptions {
     /// Basic event (without parameters)
-    static func event(_ eventName: String) -> LogEventOptions {
+    @objc static func event(_ eventName: String) -> LogEventOptions {
         return LogEventOptions(eventName: eventName)
     }
     
     /// Event with parameters
-    static func event(_ eventName: String, params: [String: Any]) -> LogEventOptions {
+    @objc static func event(_ eventName: String, params: [String: Any]) -> LogEventOptions {
         return LogEventOptions(eventName: eventName, params: params)
     }
 }
 
 /// MonetaiSDK main class
-public class MonetaiSDK: ObservableObject {
+@objc public class MonetaiSDK: NSObject, ObservableObject {
     
     // MARK: - Singleton
-    public static let shared = MonetaiSDK()
+    @objc public static let shared = MonetaiSDK()
     
     // MARK: - Properties
     @Published public private(set) var isInitialized: Bool = false
@@ -50,10 +51,15 @@ public class MonetaiSDK: ObservableObject {
     // MARK: - Event Publisher
     public let discountInfoLoaded = PassthroughSubject<Void, Never>()
     
-    // MARK: - Discount Info Callback
+    // MARK: - Discount Info Callback (Swift only)
     public var onDiscountInfoChange: ((AppUserDiscount?) -> Void)?
     
-    private init() {}
+    // MARK: - Objective-C Compatible Callback
+    @objc public var onDiscountInfoChangeCallback: ((Any?) -> Void)?
+    
+    private override init() {
+        super.init()
+    }
     
     // MARK: - Public Methods
     
@@ -152,6 +158,7 @@ public class MonetaiSDK: ObservableObject {
             
             // Call callback
             onDiscountInfoChange?(discount)
+            onDiscountInfoChangeCallback?(discount as Any?)
             
             print("[MonetaiSDK] Discount information auto-load complete: \(discount != nil ? "Discount available" : "No discount")")
             
@@ -159,6 +166,7 @@ public class MonetaiSDK: ObservableObject {
             print("[MonetaiSDK] Discount information auto-load failed: \(error)")
             currentDiscount = nil
             onDiscountInfoChange?(nil)
+            onDiscountInfoChangeCallback?(nil as Any?)
         }
     }
     
@@ -254,7 +262,7 @@ public class MonetaiSDK: ObservableObject {
     
     /// Reset SDK
     @MainActor
-    public func reset() {
+    @objc public func reset() {
         sdkKey = nil
         userId = nil
         campaign = nil
@@ -267,23 +275,94 @@ public class MonetaiSDK: ObservableObject {
     }
     
     /// Return current user ID
-    public func getUserId() -> String? {
+    @objc public func getUserId() -> String? {
         return userId
     }
     
     /// Return current SDK key
-    public func getSdkKey() -> String? {
+    @objc public func getSdkKey() -> String? {
         return sdkKey
     }
     
     /// Return SDK initialization status
-    public func getInitialized() -> Bool {
+    @objc public func getInitialized() -> Bool {
         return isInitialized
     }
     
     /// Return current exposure time (seconds)
     public func getExposureTimeSec() -> Int? {
         return exposureTimeSec
+    }
+    
+    // MARK: - Objective-C Compatible Methods
+    
+    /// Initialize MonetaiSDK (Objective-C compatible)
+    /// - Parameters:
+    ///   - sdkKey: SDK key (required)
+    ///   - userId: User unique ID (required)
+    ///   - useStoreKit2: Whether to use StoreKit2 (default: false)
+    ///   - completion: Completion handler with result
+    @objc public func initializeWithSdkKey(_ sdkKey: String, 
+                                          userId: String, 
+                                          useStoreKit2: Bool, 
+                                          completion: @escaping (InitializeResult?, Error?) -> Void) {
+        Task {
+            do {
+                let result = try await initialize(sdkKey: sdkKey, userId: userId, useStoreKit2: useStoreKit2)
+                completion(result, nil)
+            } catch {
+                completion(nil, error)
+            }
+        }
+    }
+    
+    /// Perform user prediction (Objective-C compatible)
+    /// - Parameter completion: Completion handler with result
+    @objc public func predictWithCompletion(_ completion: @escaping (PredictResponse?, Error?) -> Void) {
+        Task {
+            do {
+                let result = try await predict()
+                completion(result, nil)
+            } catch {
+                completion(nil, error)
+            }
+        }
+    }
+    
+    /// Log event (Objective-C compatible)
+    /// - Parameters:
+    ///   - eventName: Event name
+    ///   - params: Event parameters (optional)
+    @objc public func logEventWithEventName(_ eventName: String, params: [String: Any]? = nil) {
+        Task {
+            await logEvent(eventName: eventName, params: params)
+        }
+    }
+    
+    /// Get current user's discount information (Objective-C compatible)
+    /// - Parameter completion: Completion handler with result
+    @objc public func getCurrentDiscountWithCompletion(_ completion: @escaping (AppUserDiscount?, Error?) -> Void) {
+        Task {
+            do {
+                let discount = try await getCurrentDiscount()
+                completion(discount, nil)
+            } catch {
+                completion(nil, error)
+            }
+        }
+    }
+    
+    /// Check if active discount exists (Objective-C compatible)
+    /// - Parameter completion: Completion handler with result
+    @objc public func hasActiveDiscountWithCompletion(_ completion: @escaping (Bool, Error?) -> Void) {
+        Task {
+            do {
+                let hasDiscount = try await hasActiveDiscount()
+                completion(hasDiscount, nil)
+            } catch {
+                completion(false, error)
+            }
+        }
     }
     
     // MARK: - Private Methods
@@ -360,16 +439,55 @@ public class MonetaiSDK: ObservableObject {
 // MARK: - Result Types
 
 /// Initialization result
-public struct InitializeResult {
-    public let organizationId: Int
-    public let platform: String
-    public let version: String
-    public let userId: String
+@objc public class InitializeResult: NSObject {
+    @objc public let organizationId: Int
+    @objc public let platform: String
+    @objc public let version: String
+    @objc public let userId: String
     public let group: ABTestGroup?
+    
+    public init(organizationId: Int, platform: String, version: String, userId: String, group: ABTestGroup?) {
+        self.organizationId = organizationId
+        self.platform = platform
+        self.version = version
+        self.userId = userId
+        self.group = group
+        super.init()
+    }
+    
+    // Objective-C compatible getters
+    @objc public var groupString: String? {
+        return group?.stringValue
+    }
+    
+    // Custom description for better logging
+    public override var description: String {
+        return "InitializeResult(organizationId: \(organizationId), platform: \"\(platform)\", version: \"\(version)\", userId: \"\(userId)\", group: \(group?.stringValue ?? "nil"))"
+    }
 }
 
 /// Prediction response result
-public struct PredictResponse {
+@objc public class PredictResponse: NSObject {
     public let prediction: PredictResult?
     public let testGroup: ABTestGroup?
+    
+    public init(prediction: PredictResult?, testGroup: ABTestGroup?) {
+        self.prediction = prediction
+        self.testGroup = testGroup
+        super.init()
+    }
+    
+    // Objective-C compatible getters
+    @objc public var predictionString: String? {
+        return prediction?.stringValue
+    }
+    
+    @objc public var testGroupString: String? {
+        return testGroup?.stringValue
+    }
+    
+    // Custom description for better logging
+    public override var description: String {
+        return "PredictResponse(prediction: \(prediction?.stringValue ?? "nil"), testGroup: \(testGroup?.stringValue ?? "nil"))"
+    }
 } 
