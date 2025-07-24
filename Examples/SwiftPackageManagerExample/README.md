@@ -1,57 +1,56 @@
-# Monetai iOS SDK - CocoaPods Example
+# Monetai iOS SDK - Swift Package Manager Example
 
-This example demonstrates how to integrate Monetai iOS SDK using CocoaPods package manager.
+This example demonstrates how to integrate Monetai iOS SDK using Swift Package Manager (SPM).
 
 ## Features Demonstrated
 
-- ✅ SDK initialization using CocoaPods
+- ✅ SDK initialization using Swift Package Manager
 - ✅ Event logging with parameters
 - ✅ User prediction and A/B testing
 - ✅ Discount management
 - ✅ Real-time discount status updates
 - ✅ SwiftUI integration
+- ✅ RevenueCat integration for subscription management
 
 ## Prerequisites
 
 - Xcode 15.0+
 - iOS 13.0+
-- CocoaPods installed on your system
+- Swift Package Manager (included with Xcode)
 
 ## Setup
 
-### 1. Install CocoaPods (if not already installed)
+### 1. Navigate to the example directory
 
 ```bash
-sudo gem install cocoapods
+cd Examples/SwiftPackageManagerExample
 ```
 
-### 2. Navigate to the example directory
+### 2. Open the project
 
 ```bash
-cd Examples/CocoaPodsExample
+open SwiftPackageManagerExample.xcodeproj
 ```
 
-### 3. Install dependencies
+### 3. Configure dependencies
 
-```bash
-pod install
-```
-
-### 4. Open the workspace
-
-```bash
-open CocoaPodsExample.xcworkspace
-```
-
-**⚠️ Important**: Always open the `.xcworkspace` file, not the `.xcodeproj` file when using CocoaPods.
+The project uses Swift Package Manager for dependency management. Dependencies are automatically resolved when you open the project in Xcode.
 
 ## Configuration
 
-1. Open `ContentView.swift`
+1. Open `Constants.swift`
 2. Update the SDK key and user ID with your own values:
+
    ```swift
-   private let sdkKey = "your-sdk-key"
-   private let userId = "your-user-id"
+   struct Constants {
+       // MARK: - MonetaiSDK Configuration
+       static let sdkKey = "your-sdk-key-here"
+       static let userId = "example-user-id"
+       static let useStoreKit2 = true
+
+       // MARK: - RevenueCat Configuration
+       static let revenueCatAPIKey = "your-revenuecat-api-key-here"
+   }
    ```
 
 ## Running the Example
@@ -63,26 +62,24 @@ open CocoaPodsExample.xcworkspace
    - Tap buttons to log events
    - Use "Predict User Behavior" to get AI predictions
    - Check discount status and availability
+   - Test RevenueCat subscription flows
 
 ## Integration Method
 
-This example uses CocoaPods to integrate Monetai SDK:
+This example uses Swift Package Manager to integrate Monetai SDK:
 
-### Podfile
+### Package Dependencies
 
-```ruby
-platform :ios, '13.0'
-use_frameworks!
+The project includes the following dependencies:
 
-target 'CocoaPodsExample' do
-  pod 'MonetaiSDK', :path => '../../'
-end
-```
+- MonetaiSDK (local package)
+- RevenueCat (for subscription management)
 
 ### Import
 
 ```swift
 import MonetaiSDK
+import RevenueCat
 ```
 
 ## Key Implementation Details
@@ -93,7 +90,7 @@ import MonetaiSDK
 let result = try await monetaiSDK.initialize(
     sdkKey: sdkKey,
     userId: userId,
-    useStoreKit2: false // Using StoreKit 1 for CocoaPods example
+    useStoreKit2: true // Using StoreKit 2 for SPM example
 )
 ```
 
@@ -109,8 +106,8 @@ await monetaiSDK.logEvent(eventName: "product_viewed", params: [
 ])
 
 // Using LogEventOptions
-let options = LogEventOptions.event("cocoapods_example_custom", params: [
-    "integration_type": "cocoapods",
+let options = LogEventOptions.event("spm_example_custom", params: [
+    "integration_type": "swift_package_manager",
     "timestamp": Date().timeIntervalSince1970
 ])
 await monetaiSDK.logEvent(options)
@@ -142,20 +139,36 @@ monetaiSDK.onDiscountInfoChange = { discount in
 }
 ```
 
+### RevenueCat Integration
+
+This example also demonstrates RevenueCat integration for subscription management:
+
+```swift
+// Initialize RevenueCat
+Purchases.configure(withAPIKey: Constants.revenueCatAPIKey)
+
+// Get available packages
+let offerings = try await Purchases.shared.offerings()
+let packages = offerings.current?.availablePackages ?? []
+
+// Purchase package
+let customerInfo = try await Purchases.shared.purchase(package: package)
+```
+
 ## Troubleshooting
 
 ### Common Issues
 
 1. **"No such module 'MonetaiSDK'"**
 
-   - Make sure you opened the `.xcworkspace` file
-   - Run `pod install` again
+   - Make sure the package dependencies are resolved
    - Clean build folder (`Shift + Cmd + K`)
+   - Restart Xcode
 
 2. **Build errors**
 
    - Check iOS deployment target (should be 13.0+)
-   - Try running `pod update`
+   - Verify package dependencies are up to date
 
 3. **SDK initialization fails**
    - Verify your SDK key is correct
@@ -172,4 +185,5 @@ monetaiSDK.onDiscountInfoChange = { discount in
 
 For more integration options, check out:
 
-- [Swift Package Manager Example](../SwiftPackageManagerExample/)
+- [CocoaPods Example](../CocoaPodsExample/)
+- [Simple App Example](../SimpleApp/)

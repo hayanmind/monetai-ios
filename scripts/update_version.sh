@@ -24,14 +24,18 @@ echo "Updating MonetaiSDK.podspec..."
 if [[ "$OSTYPE" == "darwin"* ]]; then
     # macOS
     sed -i '' "s/spec.version      = \"[^\"]*\"/spec.version      = \"$NEW_VERSION\"/" MonetaiSDK.podspec
+    # Update SDKVersion.swift hardcoded version
+    sed -i '' "s/return \"[^\"]*\"/return \"$NEW_VERSION\"/" Sources/MonetaiSDK/Utils/SDKVersion.swift
 else
     # Linux
     sed -i "s/spec.version      = \"[^\"]*\"/spec.version      = \"$NEW_VERSION\"/" MonetaiSDK.podspec
+    # Update SDKVersion.swift hardcoded version
+    sed -i "s/return \"[^\"]*\"/return \"$NEW_VERSION\"/" Sources/MonetaiSDK/Utils/SDKVersion.swift
 fi
 
 echo "Version updated successfully!"
 echo "Don't forget to:"
-echo "1. Commit the changes: git add .version MonetaiSDK.podspec"
+echo "1. Commit the changes: git add .version MonetaiSDK.podspec Sources/MonetaiSDK/Utils/SDKVersion.swift"
 echo "2. Commit: git commit -m \"Bump version to $NEW_VERSION\""
 echo "3. Push to main: git push origin main"
 echo "4. GitHub Actions will automatically create tag and deploy" 

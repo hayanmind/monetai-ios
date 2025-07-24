@@ -4,14 +4,26 @@ This directory contains example projects demonstrating how to integrate Monetai 
 
 ## Available Examples
 
+### 🎯 Simple App Example
+
+**Location**: `SimpleApp/`
+
+- **Start here first** - The most basic example to understand core concepts
+- Simple UIKit-based app using Swift Package Manager
+- Basic SDK integration and core feature demonstration
+- Manual dependency management
+- Perfect starting point to understand SDK core features
+
+[📖 View Simple App Example →](SimpleApp/)
+
 ### 📦 Swift Package Manager Example
 
 **Location**: `SwiftPackageManagerExample/`
 
-- **Recommended** integration method
-- Native Xcode support
-- Easy dependency management
-- Complete SwiftUI example with RevenueCat integration
+- Advanced integration method using Swift Package Manager
+- Native Xcode support with SwiftUI
+- RevenueCat integration for purchase functionality
+- Complete production-ready example
 
 [📖 View Swift Package Manager Example →](SwiftPackageManagerExample/)
 
@@ -20,187 +32,43 @@ This directory contains example projects demonstrating how to integrate Monetai 
 **Location**: `CocoaPodsExample/`
 
 - Traditional iOS dependency manager
-- Wide compatibility
+- SwiftUI with RevenueCat integration
+- RevenueCat integration for purchase functionality
 - Easy setup with Podfile
-- Demonstrates StoreKit 1 integration
+- Demonstrates StoreKit integration
 
 [📖 View CocoaPods Example →](CocoaPodsExample/)
 
-### 🎯 Simple App Example
+## Quick Start
 
-**Location**: `SimpleApp/`
+1. **Start with SimpleApp** - Understand basic SDK functionality first
+2. **Choose** your preferred integration method for advanced features
+3. **Navigate** to the example directory
+4. **Follow** the example's README for detailed setup instructions
+5. **Configure** your API keys in `Constants.swift`
+6. **Build and run** the example
 
-- Minimal UIKit-based example
-- Basic SDK integration demonstration
-- Clean and straightforward implementation
-- Perfect for understanding core SDK features
-- Manual dependency management
+## Common Features
 
-[📖 View Simple App Example →](SimpleApp/)
+All examples demonstrate:
 
-## Quick Comparison
+- ✅ SDK initialization and configuration
+- ✅ Event logging with parameters
+- ✅ AI-powered user prediction
+- ✅ Discount management and real-time updates
+- ✅ Error handling
 
-| Feature                   | Swift Package Manager | CocoaPods |
-| ------------------------- | --------------------- | --------- |
-| **Ease of Setup**         | ⭐⭐⭐⭐⭐            | ⭐⭐⭐⭐  |
-| **Xcode Integration**     | Native                | Workspace |
-| **Build Time**            | Fast                  | Medium    |
-| **Dependency Resolution** | Automatic             | Automatic |
-| **Community Support**     | Growing               | Mature    |
+**Advanced Examples (Swift Package Manager & CocoaPods) additionally include:**
 
-## Common Features Demonstrated
-
-All examples include:
-
-- ✅ **SDK Initialization**: Proper setup and configuration
-- ✅ **Event Logging**: User behavior tracking with parameters
-- ✅ **User Prediction**: AI-powered purchase likelihood prediction
-- ✅ **Discount Management**: Automatic discount creation and status checking
-- ✅ **A/B Testing**: Test group assignment and management
-- ✅ **Error Handling**: Comprehensive error management
-- ✅ **SwiftUI Integration**: Modern iOS development patterns
-- ✅ **Real-time Updates**: Live discount status updates
-
-## Getting Started
-
-### 1. Choose Your Integration Method
-
-- **New projects**: Use Swift Package Manager
-- **Existing CocoaPods projects**: Use CocoaPods example
-
-### 2. Clone and Setup
-
-```bash
-# Clone the repository
-git clone https://github.com/hayanmind/monetai-ios.git
-cd monetai-ios/Examples
-
-# Choose your example and follow its README
-cd SwiftPackageManagerExample/  # For Swift Package Manager
-cd CocoaPodsExample/     # For CocoaPods
-```
-
-### 3. Configuration
-
-Each example includes a `Constants.swift` file for configuration. Update the following values:
-
-```swift
-// In Constants.swift
-struct Constants {
-    static let sdkKey = "your-sdk-key-here"
-    static let userId = "your-unique-user-id"
-    static let revenueCatAPIKey = "your-revenuecat-api-key-here"
-}
-```
-
-**Note**: The `Constants.swift` file contains placeholder values. Update them with your actual API keys before running the examples.
-
-### 4. Run and Explore
-
-1. Open the project in Xcode
-2. Build and run on simulator or device
-3. Explore different features and integration patterns
-4. Review the code for implementation details
-
-## Integration Differences
-
-### SDK Initialization
-
-All examples use the same core API with slight variations:
-
-```swift
-// Common initialization pattern
-let result = try await MonetaiSDK.shared.initialize(
-    sdkKey: "your-sdk-key",
-    userId: "user-id",
-    useStoreKit2: true // Varies by example
-)
-```
-
-### Package Manager Specific Setup
-
-#### Swift Package Manager
-
-```swift
-// Package.swift
-dependencies: [
-    .package(url: "https://github.com/hayanmind/monetai-ios.git", from: "1.0.0")
-]
-```
-
-#### CocoaPods
-
-```ruby
-# Podfile
-pod 'MonetaiSDK'
-```
+- ✅ RevenueCat integration for subscription management
+- ✅ In-app purchase functionality
+- ✅ StoreKit integration
 
 ## Prerequisites
 
-All examples require:
-
 - **Xcode**: 15.0 or later
 - **iOS**: 13.0 or later
-- **Swift**: 5.0 or later
 - **Valid SDK Key**: Obtain from Monetai Dashboard
-
-## Package Manager Installation
-
-### Swift Package Manager
-
-Already included in Xcode - no additional installation needed.
-
-### CocoaPods
-
-```bash
-sudo gem install cocoapods
-```
-
-## Key SDK Features Demonstrated
-
-### 🤖 AI-Powered Predictions
-
-```swift
-let result = try await MonetaiSDK.shared.predict()
-switch result.prediction {
-case .purchaser: // User likely to purchase
-case .nonPurchaser: // Show discount to convert
-}
-```
-
-### 📊 Event Tracking
-
-```swift
-// Simple event
-await MonetaiSDK.shared.logEvent(eventName: "app_opened")
-
-// Event with parameters
-await MonetaiSDK.shared.logEvent(
-    eventName: "product_viewed",
-    params: ["product_id": "premium_plan"]
-)
-```
-
-### 💰 Discount Management
-
-```swift
-// Check for active discounts
-let discount = try await MonetaiSDK.shared.getCurrentDiscount()
-let hasActiveDiscount = try await MonetaiSDK.shared.hasActiveDiscount()
-
-// Listen for discount changes
-MonetaiSDK.shared.onDiscountInfoChange = { discount in
-    // Update UI accordingly
-}
-```
-
-## Next Steps
-
-1. **Choose** your preferred integration method
-2. **Follow** the specific example's README
-3. **Customize** the implementation for your app
-4. **Test** with different user scenarios
-5. **Deploy** to production with your SDK key
 
 ## Getting Help
 
