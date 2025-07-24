@@ -7,7 +7,7 @@ This document explains how to update the SDK version across different distributi
 The SDK version is managed in the following files:
 
 1. **MonetaiSDK.podspec** - CocoaPods version
-2. **Sources/MonetaiSDK/Utils/SDKVersion.swift** - SDK runtime version (hardcoded)
+2. **Sources/MonetaiSDK/Utils/SDKVersion.swift** - SDK runtime version
 3. **.version** - Version tracking file
 
 ## Automatic Version Update (Recommended)
