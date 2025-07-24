@@ -4,7 +4,7 @@ A minimal UIKit-based example demonstrating the core features of Monetai iOS SDK
 
 ## Overview
 
-SimpleApp is designed to be the most straightforward way to understand and integrate Monetai SDK into your iOS application. It uses UIKit and manual dependency management, making it perfect for developers who want to see the SDK in action without the complexity of package managers.
+SimpleApp is designed to be the most straightforward way to understand and integrate Monetai SDK into your iOS application. It uses UIKit and Swift Package Manager with remote package dependencies, making it perfect for developers who want to see the SDK in action with minimal setup.
 
 ## Features Demonstrated
 
@@ -40,14 +40,13 @@ git clone https://github.com/hayanmind/monetai-ios.git
 cd monetai-ios/Examples/SimpleApp
 ```
 
-### 2. Add Monetai SDK
+### 2. Open the Project
 
-Since this example uses manual dependency management, you need to add the SDK manually:
+The project uses Swift Package Manager with remote package dependencies. Dependencies are automatically resolved when you open the project in Xcode.
 
-1. Download the latest Monetai SDK framework
-2. Drag and drop `MonetaiSDK.framework` into your Xcode project
-3. Make sure "Copy items if needed" is checked
-4. Add the framework to your target's "Frameworks, Libraries, and Embedded Content"
+```bash
+open SimpleApp.xcodeproj
+```
 
 ### 3. Configure SDK Keys
 
@@ -66,9 +65,8 @@ struct Constants {
 
 ### 4. Build and Run
 
-1. Open `SimpleApp.xcodeproj` in Xcode
-2. Select your target device or simulator
-3. Build and run the project (⌘+R)
+1. Select your target device or simulator
+2. Build and run the project (⌘+R)
 
 ## Key Implementation Details
 
@@ -185,9 +183,9 @@ class DiscountBannerView: UIView {
 
 ### Common Issues
 
-1. **SDK Not Found**: Ensure the framework is properly added to your project
+1. **SDK Not Found**: Make sure the package dependencies are resolved
 2. **Initialization Failed**: Check your SDK key and network connection
-3. **Build Errors**: Verify the framework is linked to your target
+3. **Build Errors**: Verify package dependencies are up to date
 
 ### Debug Information
 

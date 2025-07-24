@@ -11,7 +11,6 @@ This directory contains example projects demonstrating how to integrate Monetai 
 - **Start here first** - The most basic example to understand core concepts
 - Simple UIKit-based app using Swift Package Manager
 - Basic SDK integration and core feature demonstration
-- Manual dependency management
 - Perfect starting point to understand SDK core features
 
 [📖 View Simple App Example →](SimpleApp/)

@@ -72,7 +72,7 @@ This example uses Swift Package Manager to integrate Monetai SDK:
 
 The project includes the following dependencies:
 
-- MonetaiSDK (local package)
+- MonetaiSDK
 - RevenueCat (for subscription management)
 
 ### Import
