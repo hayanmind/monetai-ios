@@ -17,6 +17,10 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     
+    // Log test event before SDK initialization to check pending events
+    NSLog(@"🔍 Testing pending events - logging test event before SDK init");
+    [[MonetaiSDK shared] logEventWithEventName:@"test_pending_event" params:@{@"test": @"pending_event_check"}];
+    
     // Initialize Monetai SDK
     [[MonetaiSDK shared] initializeWithSdkKey:kSDKKey
                                        userId:kUserId
