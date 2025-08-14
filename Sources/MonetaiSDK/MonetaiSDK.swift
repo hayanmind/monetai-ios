@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import UIKit
 
 /// Struct representing event logging options
 @objc public class LogEventOptions: NSObject {
@@ -56,6 +57,13 @@ public extension LogEventOptions {
     
     // MARK: - Objective-C Compatible Callback
     @objc public var onDiscountInfoChangeCallback: ((Any?) -> Void)?
+    
+    // MARK: - Paywall Management
+    public let paywallManager = MonetaiPaywallManager()
+    public let bannerManager = MonetaiBannerManager()
+    
+    // MARK: - Paywall Configuration
+    private var paywallConfig: PaywallConfig?
     
     private override init() {
         super.init()
@@ -159,6 +167,14 @@ public extension LogEventOptions {
             // Call callback
             onDiscountInfoChange?(discount)
             onDiscountInfoChangeCallback?(discount as Any?)
+            
+            // Update paywall managers if config exists
+            if let paywallConfig = paywallConfig {
+                if let discountInfo = convertToDiscountInfo() {
+                    paywallManager.configure(paywallConfig: paywallConfig, discountInfo: discountInfo)
+                    bannerManager.configure(paywallConfig: paywallConfig, discountInfo: discountInfo)
+                }
+            }
             
             print("[MonetaiSDK] Discount information auto-load complete: \(discount != nil ? "Discount available" : "No discount")")
             
@@ -290,6 +306,116 @@ public extension LogEventOptions {
     }
     
     /// Return current exposure time (seconds)
+    
+    // MARK: - Paywall Methods
+    
+    /// Configure paywall with the specified configuration
+    /// - Parameter config: Paywall configuration
+    @objc public func configurePaywall(_ config: PaywallConfig) {
+        self.paywallConfig = config
+        
+        // Configure managers
+        if let discountInfo = convertToDiscountInfo() {
+            paywallManager.configure(paywallConfig: config, discountInfo: discountInfo)
+            bannerManager.configure(paywallConfig: config, discountInfo: discountInfo)
+        }
+    }
+    
+    /// Show paywall
+    @objc public func showPaywall() {
+        paywallManager.showPaywall()
+    }
+    
+    /// Hide paywall
+    @objc public func hidePaywall() {
+        paywallManager.hidePaywall()
+    }
+    
+    /// Show banner
+    @objc public func showBanner() {
+        bannerManager.showBanner()
+    }
+    
+    /// Hide banner
+    @objc public func hideBanner() {
+        bannerManager.hideBanner()
+    }
+    
+    /// Present paywall view controller
+    /// - Parameter presentingViewController: View controller to present from
+    @objc public func presentPaywall(from presentingViewController: UIViewController) {
+        guard let paywallParams = paywallManager.paywallParams else {
+            print("[MonetaiSDK] Cannot present paywall - paywallParams is null")
+            return
+        }
+        
+        let paywallVC = MonetaiPaywallViewController(
+            paywallParams: paywallParams,
+            onClose: { [weak self] in
+                self?.hidePaywall()
+            },
+            onPurchase: { [weak self] in
+                self?.paywallManager.handlePurchase()
+            },
+            onTermsOfService: { [weak self] in
+                self?.paywallManager.handleTermsOfService()
+            },
+            onPrivacyPolicy: { [weak self] in
+                self?.paywallManager.handlePrivacyPolicy()
+            }
+        )
+        
+        paywallVC.modalPresentationStyle = .overFullScreen
+        paywallVC.modalTransitionStyle = .crossDissolve
+        
+        presentingViewController.present(paywallVC, animated: true)
+    }
+    
+    /// Present banner view
+    /// - Parameter parentView: Parent view to add banner to
+    @objc public func presentBanner(in parentView: UIView) {
+        guard let bannerParams = bannerManager.bannerParams else {
+            print("[MonetaiSDK] Cannot present banner - bannerParams is null")
+            return
+        }
+
+        let banner = MonetaiBannerView()
+        banner.translatesAutoresizingMaskIntoConstraints = false
+        parentView.addSubview(banner)
+
+        // Position near bottom with optional custom bottom inset, full width with margins
+        NSLayoutConstraint.activate([
+            banner.leadingAnchor.constraint(equalTo: parentView.leadingAnchor, constant: 16),
+            banner.trailingAnchor.constraint(equalTo: parentView.trailingAnchor, constant: -16),
+            banner.bottomAnchor.constraint(equalTo: parentView.safeAreaLayoutGuide.bottomAnchor, constant: -CGFloat(bannerParams.bottom))
+        ])
+
+        // Configure after layout so webview gets correct size
+        banner.configure(bannerParams: bannerParams) { [weak self] in
+            self?.showPaywall()
+        }
+
+        // Animate in from bottom
+        banner.alpha = 0
+        banner.transform = CGAffineTransform(translationX: 0, y: 20)
+        UIView.animate(withDuration: 0.25) {
+            banner.alpha = 1
+            banner.transform = .identity
+        }
+    }
+    
+    // MARK: - Private Helper Methods
+    
+    private func convertToDiscountInfo() -> DiscountInfo? {
+        guard let currentDiscount = currentDiscount else { return nil }
+        
+        return DiscountInfo(
+            startedAt: currentDiscount.startedAt,
+            endedAt: currentDiscount.endedAt,
+            userId: currentDiscount.appUserId,
+            sdkKey: currentDiscount.sdkKey
+        )
+    }
     public func getExposureTimeSec() -> Int? {
         return exposureTimeSec
     }
@@ -363,6 +489,56 @@ public extension LogEventOptions {
                 completion(false, error)
             }
         }
+    }
+    
+    // MARK: - Paywall Methods (Objective-C Compatible)
+    
+    /// Configure paywall (Objective-C compatible)
+    /// - Parameter config: Paywall configuration
+    @objc public func configurePaywallWithConfig(_ config: PaywallConfig) {
+        configurePaywall(config)
+    }
+    
+    /// Show paywall (Objective-C compatible)
+    @objc public func showPaywallWithCompletion(_ completion: @escaping () -> Void) {
+        showPaywall()
+        completion()
+    }
+    
+    /// Hide paywall (Objective-C compatible)
+    @objc public func hidePaywallWithCompletion(_ completion: @escaping () -> Void) {
+        hidePaywall()
+        completion()
+    }
+    
+    /// Show banner (Objective-C compatible)
+    @objc public func showBannerWithCompletion(_ completion: @escaping () -> Void) {
+        showBanner()
+        completion()
+    }
+    
+    /// Hide banner (Objective-C compatible)
+    @objc public func hideBannerWithCompletion(_ completion: @escaping () -> Void) {
+        hideBanner()
+        completion()
+    }
+    
+    /// Present paywall view controller (Objective-C compatible)
+    /// - Parameters:
+    ///   - presentingViewController: View controller to present from
+    ///   - completion: Completion handler
+    @objc public func presentPaywallFromViewController(_ presentingViewController: UIViewController, completion: @escaping () -> Void) {
+        presentPaywall(from: presentingViewController)
+        completion()
+    }
+    
+    /// Present banner view (Objective-C compatible)
+    /// - Parameters:
+    ///   - parentView: Parent view to add banner to
+    ///   - completion: Completion handler
+    @objc public func presentBannerInParentView(_ parentView: UIView, completion: @escaping () -> Void) {
+        presentBanner(in: parentView)
+        completion()
     }
     
     // MARK: - Private Methods
