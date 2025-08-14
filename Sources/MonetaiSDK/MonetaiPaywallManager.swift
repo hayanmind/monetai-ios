@@ -48,18 +48,35 @@ import UIKit
     
     /// Handle purchase action
     @objc public func handlePurchase() {
-        paywallConfig?.onPurchase?()
-        hidePaywall()
+        if let onPurchase = paywallConfig?.onPurchase {
+            // Ensure UI-affecting callbacks run on main thread
+            DispatchQueue.main.async {
+                onPurchase {
+                    // Ensure actual modal dismissal via SDK entry point
+                    MonetaiSDK.shared.hidePaywall()
+                }
+            }
+        } else {
+            print("[MonetaiSDK] onPurchase callback not set.")
+        }
     }
     
     /// Handle terms of service action
     @objc public func handleTermsOfService() {
-        paywallConfig?.onTermsOfService?()
+        if let onTos = paywallConfig?.onTermsOfService {
+            DispatchQueue.main.async {
+                onTos()
+            }
+        }
     }
     
     /// Handle privacy policy action
     @objc public func handlePrivacyPolicy() {
-        paywallConfig?.onPrivacyPolicy?()
+        if let onPrivacy = paywallConfig?.onPrivacyPolicy {
+            DispatchQueue.main.async {
+                onPrivacy()
+            }
+        }
     }
     
     // MARK: - Private Methods

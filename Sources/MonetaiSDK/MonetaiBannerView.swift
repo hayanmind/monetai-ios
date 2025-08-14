@@ -38,16 +38,24 @@ import WebKit
 
         let config = WKWebViewConfiguration()
         let contentController = WKUserContentController()
-        // Inject RN-style bridge so web can call window.ReactNativeWebView.postMessage(...)
-        let bridgeJS = "window.ReactNativeWebView = { postMessage: function(message) { window.webkit.messageHandlers.ReactNativeWebView.postMessage(message); } }"
-        let bridgeScript = WKUserScript(source: bridgeJS, injectionTime: .atDocumentStart, forMainFrameOnly: false)
-        contentController.addUserScript(bridgeScript)
-        contentController.add(self, name: "ReactNativeWebView")
+        // Use native 'monetai' channel for messaging
+        contentController.add(self, name: "monetai")
         config.userContentController = contentController
 
         webView = WKWebView(frame: .zero, configuration: config)
         webView.navigationDelegate = self
-        webView.customUserAgent = webViewUserAgent
+        // Append SDK UA token to existing UA for server-side validation
+        webView.evaluateJavaScript("navigator.userAgent") { [weak self] result, _ in
+            if let self = self, let ua = result as? String {
+                self.webView.customUserAgent = ua + " " + self.webViewUserAgent
+                print("[MonetaiSDK] Banner WebView UA set: \(self.webView.customUserAgent ?? "")")
+            } else {
+                self?.webView.customUserAgent = self?.webViewUserAgent
+                if let ua = self?.webView.customUserAgent {
+                    print("[MonetaiSDK] Banner WebView UA fallback set: \(ua)")
+                }
+            }
+        }
         webView.translatesAutoresizingMaskIntoConstraints = false
 
         loadingIndicator = UIActivityIndicatorView(style: .medium)
@@ -84,16 +92,23 @@ import WebKit
         guard let url = buildBannerURL() else { return }
         hasWebViewError = false
         loadingIndicator.startAnimating()
+        print("[MonetaiSDK] Loading banner URL: \(url.absoluteString)")
         webView.load(URLRequest(url: url))
     }
 
     // MARK: - WKScriptMessageHandler
     public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-        // Expecting messages via window.ReactNativeWebView.postMessage
-        if message.name == "ReactNativeWebView" {
-            if let data = message.body as? String, data == "CLICK_BANNER" {
-                onPaywall?()
-            }
+        guard message.name == "monetai" else { return }
+        guard let data = message.body as? String else {
+            print("[MonetaiSDK] Banner WebView message: non-string body received")
+            return
+        }
+        print("[MonetaiSDK] Banner WebView message received: name=\(message.name), action=\(data)")
+        switch data {
+        case "CLICK_BANNER":
+            onPaywall?()
+        default:
+            break
         }
     }
 

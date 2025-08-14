@@ -48,6 +48,11 @@ import WebKit
         loadPaywall()
     }
     
+    deinit {
+        // Remove message handler to avoid retain cycles
+        webView?.configuration.userContentController.removeScriptMessageHandler(forName: "ReactNativeWebView")
+    }
+    
     // MARK: - UI Setup
     
     private func setupUI() {
@@ -56,11 +61,27 @@ import WebKit
         // Setup WebView
         let webViewConfiguration = WKWebViewConfiguration()
         webViewConfiguration.allowsInlineMediaPlayback = true
+        // Use native 'monetai' channel for messaging
+        let contentController = WKUserContentController()
+        contentController.add(self, name: "monetai")
+        print("[MonetaiSDK] Paywall WebView: registered message handler 'monetai'")
+        webViewConfiguration.userContentController = contentController
         
         webView = WKWebView(frame: .zero, configuration: webViewConfiguration)
         webView.navigationDelegate = self
         webView.uiDelegate = self
-        webView.customUserAgent = webViewUserAgent
+        // Append SDK UA token to existing UA for server-side validation
+        webView.evaluateJavaScript("navigator.userAgent") { [weak self] result, _ in
+            if let self = self, let ua = result as? String {
+                self.webView.customUserAgent = ua + " " + self.webViewUserAgent
+                print("[MonetaiSDK] Paywall WebView UA set: \(self.webView.customUserAgent ?? "")")
+            } else {
+                self?.webView.customUserAgent = self?.webViewUserAgent
+                if let ua = self?.webView.customUserAgent {
+                    print("[MonetaiSDK] Paywall WebView UA fallback set: \(ua)")
+                }
+            }
+        }
         webView.translatesAutoresizingMaskIntoConstraints = false
         
         // Setup loading indicator
@@ -95,6 +116,7 @@ import WebKit
         let request = URLRequest(url: url)
         
         loadingIndicator.startAnimating()
+        print("[MonetaiSDK] Loading paywall URL: \(url.absoluteString)")
         webView.load(request)
     }
     
@@ -139,13 +161,17 @@ import WebKit
         
         components.queryItems = queryItems
         
-        return components.url!
+        let built = components.url!
+        print("[MonetaiSDK] Loading paywall URL: \(built.absoluteString)")
+        return built
     }
     
     // MARK: - Actions
     
     @objc private func handleBackgroundTap() {
-        onClose?()
+        dismiss(animated: true) { [weak self] in
+            self?.onClose?()
+        }
     }
     
     // MARK: - Error Handling
@@ -197,7 +223,7 @@ import WebKit
 
 // MARK: - WKNavigationDelegate
 
-extension MonetaiPaywallViewController: WKNavigationDelegate {
+extension MonetaiPaywallViewController: WKNavigationDelegate, WKScriptMessageHandler {
     public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         loadingIndicator.stopAnimating()
     }
@@ -210,6 +236,32 @@ extension MonetaiPaywallViewController: WKNavigationDelegate {
     public func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
         loadingIndicator.stopAnimating()
         showError()
+    }
+
+    // MARK: - WKScriptMessageHandler
+    public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        guard message.name == "monetai" else { return }
+        guard let action = message.body as? String else {
+            print("[MonetaiSDK] Paywall WebView message: non-string body received")
+            return
+        }
+        print("[MonetaiSDK] Paywall WebView message received: name=\(message.name), action=\(action)")
+        switch action {
+        case "CLICK_PURCHASE_BUTTON":
+            print("[MonetaiSDK] Action: CLICK_PURCHASE_BUTTON → onPurchase()")
+            onPurchase?()
+        case "CLICK_CLOSE_BUTTON":
+            print("[MonetaiSDK] Action: CLICK_CLOSE_BUTTON → onClose()")
+            onClose?()
+        case "CLICK_TERMS_OF_SERVICE":
+            print("[MonetaiSDK] Action: CLICK_TERMS_OF_SERVICE → onTermsOfService()")
+            onTermsOfService?()
+        case "CLICK_PRIVACY_POLICY":
+            print("[MonetaiSDK] Action: CLICK_PRIVACY_POLICY → onPrivacyPolicy()")
+            onPrivacyPolicy?()
+        default:
+            print("[MonetaiSDK] Unknown paywall action: \(action)")
+        }
     }
 }
 

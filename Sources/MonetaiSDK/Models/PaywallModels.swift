@@ -54,7 +54,8 @@ import CoreGraphics
     @objc public let bannerBottom: CGFloat
     
     // Callbacks
-    @objc public var onPurchase: (() -> Void)?
+    /// Unified purchase callback. SDK provides a close handler to dismiss the paywall when appropriate.
+    @objc public var onPurchase: (((@escaping () -> Void) -> Void))?
     @objc public var onTermsOfService: (() -> Void)?
     @objc public var onPrivacyPolicy: (() -> Void)?
     
