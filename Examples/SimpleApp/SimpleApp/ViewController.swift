@@ -75,6 +75,8 @@ class ViewController: UIViewController {
         logEventButton.translatesAutoresizingMaskIntoConstraints = false
         logEventButton.addTarget(self, action: #selector(logEventButtonTapped), for: .touchUpInside)
         view.addSubview(logEventButton)
+
+		// Removed manual Paywall controls per requirement
         
         // Discount Status Label
         discountStatusLabel.text = "Discount: None"
@@ -117,10 +119,12 @@ class ViewController: UIViewController {
             logEventButton.topAnchor.constraint(equalTo: predictButton.bottomAnchor, constant: 20),
             logEventButton.widthAnchor.constraint(equalToConstant: 150),
             logEventButton.heightAnchor.constraint(equalToConstant: 40),
+
+			// Manual Paywall buttons removed
             
-            // Discount Status Label
-            discountStatusLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            discountStatusLabel.topAnchor.constraint(equalTo: logEventButton.bottomAnchor, constant: 30),
+			// Discount Status Label
+			discountStatusLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+			discountStatusLabel.topAnchor.constraint(equalTo: logEventButton.bottomAnchor, constant: 30),
             
             // Result Label
             resultLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
@@ -141,7 +145,45 @@ class ViewController: UIViewController {
         
         // Start checking SDK status periodically
         startSDKStatusCheck()
+
+		// Configure paywall
+		configurePaywall()
     }
+
+	private func configurePaywall() {
+		let features = [
+			Feature(title: "Unlimited Access", description: "Use all premium features without limits"),
+			Feature(title: "Advanced Analytics", description: "AI-powered insights", isPremiumOnly: true)
+		]
+		let config = PaywallConfig(
+			discountPercent: 30,
+			regularPrice: "$99.99",
+			discountedPrice: "$69.99",
+			locale: "en",
+			features: features,
+			style: .highlightBenefits
+		)
+
+		config.onPurchase = { [weak self] close in
+			print("[SimpleApp] onPurchase called")
+			self?.resultLabel.text = "🛒 Purchase flow started"
+			self?.resultLabel.textColor = UIColor.systemBlue
+			DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+				print("[SimpleApp] calling close()")
+				close()
+			}
+		}
+		config.onTermsOfService = { [weak self] in
+			print("[SimpleApp] onTermsOfService called")
+			self?.presentAlert(title: "Terms of Service", message: "Open Terms of Service URL")
+		}
+		config.onPrivacyPolicy = { [weak self] in
+			print("[SimpleApp] onPrivacyPolicy called")
+			self?.presentAlert(title: "Privacy Policy", message: "Open Privacy Policy URL")
+		}
+
+		MonetaiSDK.shared.configurePaywall(config)
+	}
     
     private func setupNotifications() {
         NotificationCenter.default.addObserver(
@@ -216,60 +258,22 @@ class ViewController: UIViewController {
         }
     }
     
-    private func handleDiscountInfoChange(_ discountInfo: AppUserDiscount?) {
-        if let discount = discountInfo {
-            let now = Date()
-            let endTime = discount.endedAt
-            
-            if now < endTime {
-                // Discount is valid - show banner
-                discountStatusLabel.text = "Discount: ✅ Active (Expires: \(endTime.formatted(date: .abbreviated, time: .shortened)))"
-                discountStatusLabel.textColor = UIColor.systemGreen
-                showDiscountBanner(discount)
-            } else {
-                // Discount expired
-                discountStatusLabel.text = "Discount: ❌ Expired"
-                discountStatusLabel.textColor = UIColor.systemRed
-                hideDiscountBanner()
-            }
-        } else {
-            // No discount
-            discountStatusLabel.text = "Discount: None"
-            discountStatusLabel.textColor = UIColor.secondaryLabel
-            hideDiscountBanner()
-        }
-    }
-    
-    private func showDiscountBanner(_ discount: AppUserDiscount) {
-        // Remove existing banner if any
-        hideDiscountBanner()
-        
-        // Create and add new banner
-        let bannerView = DiscountBannerView()
-        bannerView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(bannerView)
-        
-        // Position banner at the bottom
-        NSLayoutConstraint.activate([
-            bannerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            bannerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            bannerView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20),
-            bannerView.heightAnchor.constraint(equalToConstant: 100)
-        ])
-        
-        // Show discount
-        bannerView.showDiscount(discount)
-        discountBannerView = bannerView
-        
-        // Update result label
-        resultLabel.text = "🎉 Discount banner displayed!\nSpecial offer is now active."
-        resultLabel.textColor = UIColor.systemGreen
-    }
-    
-    private func hideDiscountBanner() {
-        discountBannerView?.hideDiscount()
-        discountBannerView = nil
-    }
+	private func handleDiscountInfoChange(_ discountInfo: AppUserDiscount?) {
+		if let discount = discountInfo {
+			let now = Date()
+			let endTime = discount.endedAt
+			if now < endTime {
+				discountStatusLabel.text = "Discount: ✅ Active (Expires: \(endTime.formatted(date: .abbreviated, time: .shortened)))"
+				discountStatusLabel.textColor = UIColor.systemGreen
+			} else {
+				discountStatusLabel.text = "Discount: ❌ Expired"
+				discountStatusLabel.textColor = UIColor.systemRed
+			}
+		} else {
+			discountStatusLabel.text = "Discount: None"
+			discountStatusLabel.textColor = UIColor.secondaryLabel
+		}
+	}
     
     // MARK: - Button Actions
     @objc private func predictButtonTapped() {
@@ -291,15 +295,12 @@ class ViewController: UIViewController {
                 await MainActor.run {
                     resultLabel.text = "✅ Prediction completed - check console for details"
                     resultLabel.textColor = UIColor.systemGreen
-                    
-                    // Show alert with prediction result
-                    let alert = UIAlertController(
-                        title: "Purchase Prediction",
-                        message: "Prediction: \(result.prediction?.stringValue ?? "None")\nTest Group: \(result.testGroup?.stringValue ?? "None")",
-                        preferredStyle: .alert
-                    )
-                    alert.addAction(UIAlertAction(title: "OK", style: .default))
-                    present(alert, animated: true)
+						
+						// Show alert with prediction result (present from top-most VC safely)
+						self.presentAlert(
+							title: "Purchase Prediction",
+							message: "Prediction: \(result.prediction?.stringValue ?? "None")\nTest Group: \(result.testGroup?.stringValue ?? "None")"
+						)
                 }
                 
             } catch {
@@ -328,5 +329,32 @@ class ViewController: UIViewController {
             print("Event logged: button_click")
         }
     }
+
+	private func presentAlert(title: String, message: String) {
+		let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+		alert.addAction(UIAlertAction(title: "OK", style: .default))
+		DispatchQueue.main.async {
+			let presenter = self.presentedViewController ?? self.topMostViewController() ?? self
+			presenter.present(alert, animated: true)
+		}
+	}
+
+	private func topMostViewController() -> UIViewController? {
+		if let windowScene = UIApplication.shared.connectedScenes
+			.compactMap({ $0 as? UIWindowScene })
+			.first(where: { $0.activationState == .foregroundActive }) {
+			if let keyWindow = windowScene.windows.first(where: { $0.isKeyWindow }) ?? windowScene.windows.first {
+				var topVC = keyWindow.rootViewController
+				while let presented = topVC?.presentedViewController { topVC = presented }
+				return topVC
+			}
+		}
+		if let window = UIApplication.shared.windows.first(where: { $0.isKeyWindow }) ?? UIApplication.shared.windows.first {
+			var topVC = window.rootViewController
+			while let presented = topVC?.presentedViewController { topVC = presented }
+			return topVC
+		}
+		return nil
+	}
 }
 
