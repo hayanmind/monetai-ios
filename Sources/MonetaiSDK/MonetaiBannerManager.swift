@@ -3,7 +3,7 @@ import Combine
 import UIKit
 
 /// BannerManager handles the display and management of banner UI
-@objc public class MonetaiBannerManager: NSObject, ObservableObject {
+@objc public class MonetaiBannerManager: NSObject, ObservableObject, MonetaiPromotionTimerDelegate {
     
     // MARK: - Published Properties
     @Published public private(set) var bannerVisible: Bool = false
@@ -15,6 +15,31 @@ import UIKit
     private var cancellables = Set<AnyCancellable>()
     private weak var bannerView: MonetaiBannerView?
     private weak var paywallManager: MonetaiPaywallManager?
+    
+    // MARK: - Promotion Expiration Management
+    private var promotionTimer: MonetaiPromotionTimer?
+    
+    // MARK: - Initialization
+    public override init() {
+        super.init()
+        setupPromotionExpirationManager()
+    }
+    
+    deinit {
+        promotionTimer?.stopMonitoring()
+    }
+    
+    // MARK: - Promotion Expiration Setup
+    private func setupPromotionExpirationManager() {
+        promotionTimer = MonetaiPromotionTimer(delegate: self)
+    }
+    
+    // MARK: - PromotionExpirationDelegate
+    @objc public func promotionDidExpire() {
+        // Promotion has expired, hide banner automatically
+        print("[MonetaiSDK] BannerManager: Promotion expired, automatically hiding banner")
+        hideBanner()
+    }
     
     // MARK: - Public Methods
     
@@ -29,6 +54,16 @@ import UIKit
         self.paywallManager = paywallManager
         
         updateBannerParams()
+        
+        // Configure promotion expiration manager
+        if let discountInfo = discountInfo {
+            promotionTimer?.configure(discountInfo: discountInfo)
+        }
+        
+        // Start monitoring if banner is visible
+        if bannerVisible {
+            promotionTimer?.startMonitoring()
+        }
     }
     
     /// Show banner (SDK-controlled)
@@ -91,6 +126,10 @@ import UIKit
             self.bannerView = banner
             self.bannerVisible = true
             print("[MonetaiSDK] BannerManager: Banner shown")
+            
+            // Start monitoring promotion expiration when banner is shown
+            self.promotionTimer?.startMonitoring()
+            
             // Trigger paywall preload when banner becomes visible
             self.paywallManager?.preloadPaywall()
         }
@@ -109,6 +148,10 @@ import UIKit
             }
             self.bannerView = nil
             self.bannerVisible = false
+            
+            // Stop monitoring promotion expiration when banner is hidden
+            self.promotionTimer?.stopMonitoring()
+            
             print("[MonetaiSDK] BannerManager: Banner hidden")
         }
     }
