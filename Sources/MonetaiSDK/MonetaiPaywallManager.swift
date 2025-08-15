@@ -131,9 +131,6 @@ import UIKit
             return
         }
 
-        let paywallZ = paywallConfig.paywallZIndex
-        let paywallElevation = paywallConfig.paywallElevation
-        
         let params = PaywallParams(
             discountPercent: paywallConfig.discountPercent.description,
             endedAt: discountInfo.endedAt.ISO8601String(),
@@ -141,9 +138,7 @@ import UIKit
             discountedPrice: paywallConfig.discountedPrice,
             locale: paywallConfig.locale,
             features: paywallConfig.features,
-            style: paywallConfig.style,
-            zIndex: paywallZ,
-            elevation: paywallElevation
+            style: paywallConfig.style
         )
         paywallParams = params
     }

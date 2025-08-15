@@ -44,12 +44,8 @@ import CoreGraphics
     @objc public let locale: String
     @objc public let features: [Feature]
     @objc public let style: PaywallStyle
-    @objc public let paywallZIndex: Int
-    @objc public let paywallElevation: Int
     // Banner related
     @objc public let enabled: Bool
-    @objc public let bannerZIndex: Int
-    @objc public let bannerElevation: Int
     @objc public let bannerBottom: CGFloat
     
     // Callbacks
@@ -62,32 +58,63 @@ import CoreGraphics
         discountPercent: Int,
         regularPrice: String,
         discountedPrice: String,
-        locale: String = "en",
+        locale: String,
+        style: PaywallStyle,
         features: [Feature] = [],
-        style: PaywallStyle = .textFocused,
-        paywallZIndex: Int = 2000,
-        paywallElevation: Int = 16,
         // Banner defaults align with RN SDK
         enabled: Bool = true,
-        bannerZIndex: Int = 1000,
-        bannerElevation: Int = 8,
         bannerBottom: CGFloat = 20
     ) {
         self.discountPercent = discountPercent
         self.regularPrice = regularPrice
         self.discountedPrice = discountedPrice
         self.locale = locale
-        self.features = features
         self.style = style
-        self.paywallZIndex = paywallZIndex
-        self.paywallElevation = paywallElevation
+        self.features = features
         self.enabled = enabled
-        self.bannerZIndex = bannerZIndex
-        self.bannerElevation = bannerElevation
         self.bannerBottom = bannerBottom
         super.init()
     }
+    
+    // MARK: - Objective-C Convenience Initializer
+    
+    /// Options-based convenience initializer for Objective-C
+    @objc public convenience init(
+        discountPercent: Int,
+        regularPrice: String,
+        discountedPrice: String,
+        locale: String,
+        style: PaywallStyle,
+        options: PaywallConfigOptions?
+    ) {
+        self.init(
+            discountPercent: discountPercent,
+            regularPrice: regularPrice,
+            discountedPrice: discountedPrice,
+            locale: locale,
+            style: style,
+            features: options?.features ?? [],
+            enabled: options?.enabled?.boolValue ?? true,
+            bannerBottom: options?.bannerBottom.map { CGFloat(truncating: $0) } ?? 20
+        )
+    }
 }
+
+// MARK: - Paywall Configuration Options
+
+/// Options class for flexible PaywallConfig initialization in Objective-C
+@objcMembers
+public class PaywallConfigOptions: NSObject {
+    public var features: [Feature]?
+    public var enabled: NSNumber?
+    public var bannerBottom: NSNumber?   // CGFloat? 대신 NSNumber?로
+    
+    public override init() { 
+        super.init() 
+    }
+}
+
+
 
 // MARK: - Paywall Parameters
 @objc public class PaywallParams: NSObject {
@@ -98,8 +125,6 @@ import CoreGraphics
     @objc public let locale: String
     @objc public let features: [Feature]
     @objc public let style: PaywallStyle
-    @objc public let zIndex: Int
-    @objc public let elevation: Int
     
     @objc public init(
         discountPercent: String,
@@ -108,9 +133,7 @@ import CoreGraphics
         discountedPrice: String,
         locale: String,
         features: [Feature],
-        style: PaywallStyle,
-        zIndex: Int,
-        elevation: Int
+        style: PaywallStyle
     ) {
         self.discountPercent = discountPercent
         self.endedAt = endedAt
@@ -119,8 +142,6 @@ import CoreGraphics
         self.locale = locale
         self.features = features
         self.style = style
-        self.zIndex = zIndex
-        self.elevation = elevation
         super.init()
     }
 }
@@ -133,8 +154,6 @@ import CoreGraphics
     @objc public let endedAt: Date
     @objc public let style: PaywallStyle
     @objc public let bottom: CGFloat
-    @objc public let zIndex: Int
-    @objc public let elevation: Int
 
     @objc public init(
         enabled: Bool,
@@ -142,9 +161,7 @@ import CoreGraphics
         discountPercent: Int,
         endedAt: Date,
         style: PaywallStyle,
-        bottom: CGFloat = 20,
-        zIndex: Int = 1000,
-        elevation: Int = 8
+        bottom: CGFloat = 20
     ) {
         self.enabled = enabled
         self.locale = locale
@@ -152,8 +169,6 @@ import CoreGraphics
         self.endedAt = endedAt
         self.style = style
         self.bottom = bottom
-        self.zIndex = zIndex
-        self.elevation = elevation
         super.init()
     }
 }

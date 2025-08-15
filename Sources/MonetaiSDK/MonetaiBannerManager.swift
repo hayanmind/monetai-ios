@@ -171,9 +171,7 @@ import UIKit
             discountPercent: paywallConfig.discountPercent,
             endedAt: discountInfo.endedAt,
             style: paywallConfig.style,
-            bottom: paywallConfig.bannerBottom,
-            zIndex: paywallConfig.bannerZIndex,
-            elevation: paywallConfig.bannerElevation
+            bottom: paywallConfig.bannerBottom
         )
         bannerParams = params
     }

@@ -160,8 +160,8 @@ class ViewController: UIViewController {
 			regularPrice: "$99.99",
 			discountedPrice: "$69.99",
 			locale: "en",
-			features: features,
-			style: .highlightBenefits
+			style: .highlightBenefits,
+			features: features
 		)
 
 		config.onPurchase = { [weak self] close in
