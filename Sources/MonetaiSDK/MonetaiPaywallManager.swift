@@ -63,10 +63,7 @@ import UIKit
         self.paywallConfig = paywallConfig
         self.discountInfo = discountInfo
         
-        // ⛔️ 표시 중이면 preloaded 해제 스킵
-        if currentPaywallViewController?.presentingViewController == nil {
-            clearPreloadedPaywall()
-        }
+        clearPreloadedPaywall()
 
         updatePaywallParams()
     }
