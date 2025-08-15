@@ -48,7 +48,6 @@ import CoreGraphics
     @objc public let paywallElevation: Int
     // Banner related
     @objc public let enabled: Bool
-    @objc public let isSubscriber: Bool
     @objc public let bannerZIndex: Int
     @objc public let bannerElevation: Int
     @objc public let bannerBottom: CGFloat
@@ -70,7 +69,6 @@ import CoreGraphics
         paywallElevation: Int = 16,
         // Banner defaults align with RN SDK
         enabled: Bool = true,
-        isSubscriber: Bool = false,
         bannerZIndex: Int = 1000,
         bannerElevation: Int = 8,
         bannerBottom: CGFloat = 20
@@ -84,7 +82,6 @@ import CoreGraphics
         self.paywallZIndex = paywallZIndex
         self.paywallElevation = paywallElevation
         self.enabled = enabled
-        self.isSubscriber = isSubscriber
         self.bannerZIndex = bannerZIndex
         self.bannerElevation = bannerElevation
         self.bannerBottom = bannerBottom
@@ -131,7 +128,6 @@ import CoreGraphics
 // MARK: - Banner Parameters (to mirror RN BannerParams)
 @objc public class BannerParams: NSObject {
     @objc public let enabled: Bool
-    @objc public let isSubscriber: Bool
     @objc public let locale: String
     @objc public let discountPercent: Int
     @objc public let endedAt: Date
@@ -142,7 +138,6 @@ import CoreGraphics
 
     @objc public init(
         enabled: Bool,
-        isSubscriber: Bool,
         locale: String,
         discountPercent: Int,
         endedAt: Date,
@@ -152,7 +147,6 @@ import CoreGraphics
         elevation: Int = 8
     ) {
         self.enabled = enabled
-        self.isSubscriber = isSubscriber
         self.locale = locale
         self.discountPercent = discountPercent
         self.endedAt = endedAt

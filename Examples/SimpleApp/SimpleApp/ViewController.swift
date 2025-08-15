@@ -170,7 +170,8 @@ class ViewController: UIViewController {
 			self?.resultLabel.textColor = UIColor.systemBlue
 			DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
 				print("[SimpleApp] calling close()")
-				close()
+                close()
+                MonetaiSDK.shared.setSubscriptionStatus(true)
 			}
 		}
 		config.onTermsOfService = { [weak self] in
@@ -183,6 +184,7 @@ class ViewController: UIViewController {
 		}
 
 		MonetaiSDK.shared.configurePaywall(config)
+        MonetaiSDK.shared.setSubscriptionStatus(false)
 	}
     
     private func setupNotifications() {

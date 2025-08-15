@@ -44,7 +44,12 @@ import UIKit
 
     /// Clear preloaded paywall instance to free memory or reflect parameter changes
     @objc public func clearPreloadedPaywall() {
-        if let _ = currentPaywallViewController {
+        // ⛔️ 현재 표시 중이면 건드리지 않기
+        if let vc = currentPaywallViewController, vc.presentingViewController != nil {
+            print("[MonetaiSDK] Skip clearing preloaded paywall - currently presented")
+            return
+        }
+        if currentPaywallViewController != nil {
             print("[MonetaiSDK] Clearing preloaded paywall instance")
         }
         currentPaywallViewController = nil
@@ -58,8 +63,10 @@ import UIKit
         self.paywallConfig = paywallConfig
         self.discountInfo = discountInfo
         
-        // Invalidate any preloaded instance since parameters may change
-        clearPreloadedPaywall()
+        // ⛔️ 표시 중이면 preloaded 해제 스킵
+        if currentPaywallViewController?.presentingViewController == nil {
+            clearPreloadedPaywall()
+        }
 
         updatePaywallParams()
     }

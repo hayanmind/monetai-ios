@@ -64,6 +64,9 @@ public extension LogEventOptions {
     
     // MARK: - Paywall Configuration
     private var paywallConfig: PaywallConfig?
+    
+    // MARK: - Subscription State
+    private var isSubscriber: Bool = false
 
     
     private override init() {
@@ -316,15 +319,35 @@ public extension LogEventOptions {
         configureManagersAndUpdateBanner()
     }
     
-
+    /// Update only the subscription status without reconfiguring the entire paywall
+    /// - Parameter isSubscriber: Whether the user is currently a subscriber
+    @objc public func updateSubscriptionStatus(_ isSubscriber: Bool) {
+        guard paywallConfig != nil else {
+            print("[MonetaiSDK] Warning: Cannot update subscription status - paywall not configured")
+            return
+        }
+        
+        // Update the subscription status
+        self.isSubscriber = isSubscriber
+        
+        // Reconfigure managers and update banner visibility
+        configureManagersAndUpdateBanner()
+        
+        print("[MonetaiSDK] Subscription status updated: \(isSubscriber ? "Subscriber" : "Non-subscriber")")
+    }
     
-
-    
-
-
-
-    
-
+    /// Set initial subscription status (can be called before or after configurePaywall)
+    /// - Parameter isSubscriber: Whether the user is currently a subscriber
+    @objc public func setSubscriptionStatus(_ isSubscriber: Bool) {
+        self.isSubscriber = isSubscriber
+        
+        // If paywall is already configured, update banner visibility
+        if paywallConfig != nil {
+            configureManagersAndUpdateBanner()
+        }
+        
+        print("[MonetaiSDK] Subscription status set: \(isSubscriber ? "Subscriber" : "Non-subscriber")")
+    }
     
     // MARK: - Private Helper Methods
     
@@ -337,18 +360,19 @@ public extension LogEventOptions {
         paywallManager.configure(paywallConfig: paywallConfig, discountInfo: discountInfo)
         bannerManager.configure(paywallConfig: paywallConfig, discountInfo: discountInfo, paywallManager: paywallManager)
         
-        // Auto control banner visibility based on current discount state and paywall config
+        // Auto control banner visibility based on subscription status, discount state and paywall config
         guard let discount = currentDiscount,
               discount.endedAt > Date(),
-              paywallConfig.enabled else {
-            // Hide banner if no discount, expired, or paywall disabled
+              paywallConfig.enabled,
+              !self.isSubscriber else {
+            // Hide banner if user is subscriber, no discount, expired, or paywall disabled
             if bannerManager.bannerVisible {
                 bannerManager.hideBanner()
             }
             return
         }
         
-        // Show banner if discount is active and paywall is enabled
+        // Show banner if all conditions are met (active discount, enabled, not a subscriber)
         if !bannerManager.bannerVisible {
             bannerManager.showBanner()
         }

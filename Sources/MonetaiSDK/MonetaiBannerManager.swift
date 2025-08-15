@@ -167,7 +167,6 @@ import UIKit
 
         let params = BannerParams(
             enabled: paywallConfig.enabled,
-            isSubscriber: paywallConfig.isSubscriber,
             locale: paywallConfig.locale,
             discountPercent: paywallConfig.discountPercent,
             endedAt: discountInfo.endedAt,
