@@ -170,21 +170,8 @@ public extension LogEventOptions {
             onDiscountInfoChangeCallback?(discount as Any?)
             
             // Update paywall managers if config exists
-            if let paywallConfig = paywallConfig {
-                if let discountInfo = convertToDiscountInfo() {
-                    paywallManager.configure(paywallConfig: paywallConfig, discountInfo: discountInfo)
-                    bannerManager.configure(paywallConfig: paywallConfig, discountInfo: discountInfo, paywallManager: paywallManager)
-                    // Auto control banner visibility based on discount state
-                    if let discount = currentDiscount, discount.endedAt > Date(), paywallConfig.enabled {
-                        if !bannerManager.bannerVisible {
-                            showBanner()
-                        }
-                    } else {
-                        if bannerManager.bannerVisible {
-                            hideBanner()
-                        }
-                    }
-                }
+            if paywallConfig != nil {
+                configureManagersAndUpdateBanner()
             }
             
             print("[MonetaiSDK] Discount information auto-load complete: \(discount != nil ? "Discount available" : "No discount")")
@@ -325,45 +312,47 @@ public extension LogEventOptions {
     @objc public func configurePaywall(_ config: PaywallConfig) {
         self.paywallConfig = config
         
-        // Configure managers
-        if let discountInfo = convertToDiscountInfo() {
-            paywallManager.configure(paywallConfig: config, discountInfo: discountInfo)
-                                bannerManager.configure(paywallConfig: config, discountInfo: discountInfo, paywallManager: paywallManager)
-            // Auto control banner if discount is already loaded
-            if let discount = currentDiscount, discount.endedAt > Date(), config.enabled {
-                if !bannerManager.bannerVisible { showBanner() }
-            } else {
-                if bannerManager.bannerVisible { hideBanner() }
-            }
-        }
+        // Configure managers and update banner
+        configureManagersAndUpdateBanner()
     }
     
 
     
-    /// Show banner
-    @available(*, deprecated, message: "External banner control is deprecated. The SDK controls banner automatically.")
-    @objc public func showBanner() {
-        bannerManager.showBanner()
-    }
-    
-    /// Hide banner
-    @available(*, deprecated, message: "External banner control is deprecated. The SDK controls banner automatically.")
-    @objc public func hideBanner() {
-        bannerManager.hideBanner()
-    }
+
     
 
 
 
     
-    /// Deprecated: external banner presentation is no longer supported. The SDK manages banner lifecycle automatically.
-    @available(*, deprecated, message: "Use SDK-managed banner. It is shown/hidden automatically based on discount state.")
-    @objc public func presentBanner(in parentView: UIView) {
-        print("[MonetaiSDK] presentBanner(in:) is deprecated. The SDK controls banner automatically.")
-        showBanner()
-    }
+
     
     // MARK: - Private Helper Methods
+    
+    /// Configure paywall and banner managers, then update banner visibility
+    private func configureManagersAndUpdateBanner() {
+        guard let paywallConfig = paywallConfig,
+              let discountInfo = convertToDiscountInfo() else { return }
+        
+        // Configure managers
+        paywallManager.configure(paywallConfig: paywallConfig, discountInfo: discountInfo)
+        bannerManager.configure(paywallConfig: paywallConfig, discountInfo: discountInfo, paywallManager: paywallManager)
+        
+        // Auto control banner visibility based on current discount state and paywall config
+        guard let discount = currentDiscount,
+              discount.endedAt > Date(),
+              paywallConfig.enabled else {
+            // Hide banner if no discount, expired, or paywall disabled
+            if bannerManager.bannerVisible {
+                bannerManager.hideBanner()
+            }
+            return
+        }
+        
+        // Show banner if discount is active and paywall is enabled
+        if !bannerManager.bannerVisible {
+            bannerManager.showBanner()
+        }
+    }
     
     private func convertToDiscountInfo() -> DiscountInfo? {
         guard let currentDiscount = currentDiscount else { return nil }
@@ -460,31 +449,11 @@ public extension LogEventOptions {
     
 
     
-    /// Show banner (Objective-C compatible)
-    @available(*, deprecated, message: "External banner control is deprecated. The SDK controls banner automatically.")
-    @objc public func showBannerWithCompletion(_ completion: @escaping () -> Void) {
-        showBanner()
-        completion()
-    }
-    
-    /// Hide banner (Objective-C compatible)
-    @available(*, deprecated, message: "External banner control is deprecated. The SDK controls banner automatically.")
-    @objc public func hideBannerWithCompletion(_ completion: @escaping () -> Void) {
-        hideBanner()
-        completion()
-    }
+
     
 
     
-    /// Present banner view (Objective-C compatible)
-    /// - Parameters:
-    ///   - parentView: Parent view to add banner to
-    ///   - completion: Completion handler
-    @available(*, deprecated, message: "External banner control is deprecated. The SDK controls banner automatically.")
-    @objc public func presentBannerInParentView(_ parentView: UIView, completion: @escaping () -> Void) {
-        presentBanner(in: parentView)
-        completion()
-    }
+
     
     // MARK: - Private Methods
     
