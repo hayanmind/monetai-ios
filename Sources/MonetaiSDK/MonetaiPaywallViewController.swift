@@ -14,6 +14,7 @@ import WebKit
     private var webView: WKWebView!
     private var loadingIndicator: UIActivityIndicatorView!
     private var errorView: UIView?
+    private var dimBackgroundView: UIView!
     
     // MARK: - Constants
     private var paywallBaseURL: String { MonetaiSDKConstants.webBaseURL + "/paywall" }
@@ -48,6 +49,28 @@ import WebKit
         loadPaywall()
     }
     
+    public override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        // For compact style, ensure dim background is visible immediately
+        if paywallParams.style == .compact {
+            dimBackgroundView.alpha = 1.0
+        }
+    }
+    
+    public override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        // For compact style, animate WebView from bottom
+        if paywallParams.style == .compact {
+            webView.transform = CGAffineTransform(translationX: 0, y: 372)
+            UIView.animate(withDuration: 0.3, delay: 0, options: .curveEaseOut) {
+                self.webView.alpha = 1.0
+                self.webView.transform = .identity
+            }
+        }
+    }
+    
     deinit {
         // Remove message handler to avoid retain cycles
         webView?.configuration.userContentController.removeScriptMessageHandler(forName: "ReactNativeWebView")
@@ -56,7 +79,13 @@ import WebKit
     // MARK: - UI Setup
     
     private func setupUI() {
-        view.backgroundColor = UIColor.black.withAlphaComponent(0.4)
+        // Set main view background to clear
+        view.backgroundColor = UIColor.clear
+        
+        // Setup dim background view
+        dimBackgroundView = UIView()
+        dimBackgroundView.backgroundColor = UIColor.black.withAlphaComponent(0.4)
+        dimBackgroundView.translatesAutoresizingMaskIntoConstraints = false
         
         // Setup WebView
         let webViewConfiguration = WKWebViewConfiguration()
@@ -84,27 +113,64 @@ import WebKit
         }
         webView.translatesAutoresizingMaskIntoConstraints = false
         
-        // Setup loading indicator
-        loadingIndicator = UIActivityIndicatorView(style: .large)
-        loadingIndicator.color = .systemBlue
+        // Apply corner radius for compact style
+        if paywallParams.style == .compact {
+            webView.layer.cornerRadius = 12
+            webView.layer.masksToBounds = true
+            // Initially hide WebView for compact style to animate it in
+            webView.alpha = 0
+        }
+        
+        // Setup loading indicator - same as banner
+        loadingIndicator = UIActivityIndicatorView(style: .medium)
+        loadingIndicator.hidesWhenStopped = true
         loadingIndicator.translatesAutoresizingMaskIntoConstraints = false
         
         // Add subviews
+        view.addSubview(dimBackgroundView)
         view.addSubview(webView)
         view.addSubview(loadingIndicator)
         
-        // Setup constraints
-        NSLayoutConstraint.activate([
-            webView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
-            webView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            webView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            webView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20),
-            
-            loadingIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            loadingIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor)
-        ])
+        // Setup constraints based on style
+        if paywallParams.style == .compact {
+            // Compact style: fixed height 372, attached to bottom
+            NSLayoutConstraint.activate([
+                // Dim background covers entire screen
+                dimBackgroundView.topAnchor.constraint(equalTo: view.topAnchor),
+                dimBackgroundView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                dimBackgroundView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                dimBackgroundView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+                
+                // WebView positioned at bottom
+                webView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                webView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                webView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+                webView.heightAnchor.constraint(equalToConstant: 372),
+                
+                loadingIndicator.centerXAnchor.constraint(equalTo: webView.centerXAnchor),
+                loadingIndicator.centerYAnchor.constraint(equalTo: webView.centerYAnchor)
+            ])
+        } else {
+            // Other styles: full screen coverage
+            NSLayoutConstraint.activate([
+                // Dim background covers entire screen
+                dimBackgroundView.topAnchor.constraint(equalTo: view.topAnchor),
+                dimBackgroundView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                dimBackgroundView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                dimBackgroundView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+                
+                // WebView covers entire screen
+                webView.topAnchor.constraint(equalTo: view.topAnchor),
+                webView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                webView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                webView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+                
+                loadingIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+                loadingIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+            ])
+        }
         
-        // Add tap gesture to dismiss
+        // Add tap gesture to dismiss for all styles
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleBackgroundTap))
         view.addGestureRecognizer(tapGesture)
     }

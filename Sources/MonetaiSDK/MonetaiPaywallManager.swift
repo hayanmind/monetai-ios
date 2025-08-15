@@ -45,7 +45,7 @@ import UIKit
     @objc public func hidePaywall() {
         DispatchQueue.main.async {
             self.paywallVisible = false
-            self.dismissPresentedPaywallIfNeeded()
+            self.dismissPaywall()
         }
     }
     
@@ -138,8 +138,15 @@ import UIKit
                 self?.handlePrivacyPolicy()
             }
         )
-        paywallVC.modalPresentationStyle = .overFullScreen
-        paywallVC.modalTransitionStyle = .crossDissolve
+        
+        // Set modal presentation style based on paywall style
+        if paywallParams.style == .compact {
+            paywallVC.modalPresentationStyle = .overCurrentContext
+            paywallVC.modalTransitionStyle = .crossDissolve
+        } else {
+            paywallVC.modalPresentationStyle = .overFullScreen
+            paywallVC.modalTransitionStyle = .crossDissolve
+        }
         print("[MonetaiSDK] Presenting paywall automatically")
         presentingVC.present(paywallVC, animated: true)
         currentPaywallViewController = paywallVC
