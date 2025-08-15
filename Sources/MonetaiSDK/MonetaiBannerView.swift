@@ -50,6 +50,10 @@ import WebKit
         // Ensure corner radius is visible while keeping shadow
         layer.masksToBounds = false
         
+        // Start with banner hidden for better UX
+        isHidden = true
+        alpha = 0
+        
         loadBanner()
     }
 
@@ -117,6 +121,7 @@ import WebKit
 
     private func loadBanner() {
         guard let url = buildBannerURL() else { return }
+        print("[MonetaiSDK] Banner loading started, URL: \(url.absoluteString)")
         hasWebViewError = false
         loadingIndicator.startAnimating()
         print("[MonetaiSDK] Loading banner URL: \(url.absoluteString)")
@@ -142,16 +147,36 @@ import WebKit
     // MARK: - WKNavigationDelegate
     public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         loadingIndicator.stopAnimating()
+        
+        // 에러가 발생했으면 배너를 표시하지 않음
+        guard !hasWebViewError else {
+            print("[MonetaiSDK] Banner not shown due to previous error")
+            return
+        }
+        
+        // Show the banner with a fade-in animation
+        isHidden = false
+        alpha = 0
+        
+        UIView.animate(withDuration: 0.3, delay: 0, options: .curveEaseInOut) {
+            self.alpha = 1.0
+        }
     }
+    
     public func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+        print("[MonetaiSDK] Banner WebView didFail called with error: \(error.localizedDescription)")
         loadingIndicator.stopAnimating()
         hasWebViewError = true
         isHidden = true
+        print("[MonetaiSDK] Banner hidden due to error, hasWebViewError: \(hasWebViewError)")
     }
+    
     public func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+        print("[MonetaiSDK] Banner WebView didFailProvisionalNavigation called with error: \(error.localizedDescription)")
         loadingIndicator.stopAnimating()
         hasWebViewError = true
         isHidden = true
+        print("[MonetaiSDK] Banner hidden due to error, hasWebViewError: \(hasWebViewError)")
     }
 }
 
