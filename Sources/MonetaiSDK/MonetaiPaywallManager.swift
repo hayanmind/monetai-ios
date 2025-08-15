@@ -37,7 +37,7 @@ import UIKit
         
         DispatchQueue.main.async {
             self.paywallVisible = true
-            self.presentPaywallAutomatically()
+            self.presentPaywall()
         }
     }
     
@@ -108,8 +108,8 @@ import UIKit
         paywallParams = params
     }
     
-    // MARK: - Automatic Paywall Presentation
-    private func presentPaywallAutomatically() {
+    // MARK: - Paywall Presentation
+    private func presentPaywall() {
         guard let paywallParams = paywallParams else {
             print("[MonetaiSDK] Auto present paywall skipped - paywallParams is null")
             return
@@ -145,7 +145,7 @@ import UIKit
         currentPaywallViewController = paywallVC
     }
 
-    private func dismissPresentedPaywallIfNeeded() {
+    private func dismissPaywall() {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             if let paywallVC = self.currentPaywallViewController {
