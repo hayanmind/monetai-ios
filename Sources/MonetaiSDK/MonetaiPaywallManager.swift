@@ -17,6 +17,39 @@ import UIKit
     
     // MARK: - Public Methods
     
+    /// Preload paywall WebView offscreen for faster first presentation
+    @objc public func preloadPaywall() {
+        DispatchQueue.main.async {
+            guard let paywallParams = self.paywallParams else {
+                print("[MonetaiSDK] PaywallManager: Cannot preload - paywallParams is null (data not ready)")
+                return
+            }
+            // Already preloaded or currently presented
+            if let existing = self.currentPaywallViewController {
+                if existing.presentingViewController != nil {
+                    print("[MonetaiSDK] PaywallManager: Skip preload - already presented")
+                } else {
+                    print("[MonetaiSDK] PaywallManager: Skip preload - already preloaded")
+                }
+                return
+            }
+            // Create VC and trigger WebView load without presenting
+            let paywallVC = self.makePaywallViewController(paywallParams: paywallParams)
+            // Force view loading to kick off WebView load
+            print("[MonetaiSDK] Preloading paywall (offscreen)")
+            _ = paywallVC.view // loadViewIfNeeded() equivalent trigger
+            self.currentPaywallViewController = paywallVC
+        }
+    }
+
+    /// Clear preloaded paywall instance to free memory or reflect parameter changes
+    @objc public func clearPreloadedPaywall() {
+        if let _ = currentPaywallViewController {
+            print("[MonetaiSDK] Clearing preloaded paywall instance")
+        }
+        currentPaywallViewController = nil
+    }
+
     /// Configure paywall with configuration and discount info
     /// - Parameters:
     ///   - paywallConfig: Paywall configuration
@@ -25,6 +58,9 @@ import UIKit
         self.paywallConfig = paywallConfig
         self.discountInfo = discountInfo
         
+        // Invalidate any preloaded instance since parameters may change
+        clearPreloadedPaywall()
+
         updatePaywallParams()
     }
     
@@ -123,30 +159,18 @@ import UIKit
             print("[MonetaiSDK] Paywall already presented")
             return
         }
-        let paywallVC = MonetaiPaywallViewController(
-            paywallParams: paywallParams,
-            onClose: { [weak self] in
-                self?.hidePaywall()
-            },
-            onPurchase: { [weak self] in
-                self?.handlePurchase()
-            },
-            onTermsOfService: { [weak self] in
-                self?.handleTermsOfService()
-            },
-            onPrivacyPolicy: { [weak self] in
-                self?.handlePrivacyPolicy()
+        // Reuse preloaded VC if available; otherwise create new
+        let paywallVC: MonetaiPaywallViewController = {
+            if let preloaded = currentPaywallViewController {
+                print("[MonetaiSDK] Presenting preloaded paywall")
+                // Ensure presentation style is aligned with current params
+                configurePresentationStyle(for: preloaded, style: paywallParams.style)
+                return preloaded
             }
-        )
-        
-        // Set modal presentation style based on paywall style
-        if paywallParams.style == .compact {
-            paywallVC.modalPresentationStyle = .overCurrentContext
-            paywallVC.modalTransitionStyle = .crossDissolve
-        } else {
-            paywallVC.modalPresentationStyle = .overFullScreen
-            paywallVC.modalTransitionStyle = .crossDissolve
-        }
+            print("[MonetaiSDK] Creating paywall for presentation (no preloaded instance)")
+            return makePaywallViewController(paywallParams: paywallParams)
+        }()
+
         print("[MonetaiSDK] Presenting paywall automatically")
         presentingVC.present(paywallVC, animated: true)
         currentPaywallViewController = paywallVC
@@ -157,18 +181,14 @@ import UIKit
             guard let self = self else { return }
             if let paywallVC = self.currentPaywallViewController {
                 print("[MonetaiSDK] Dismissing presented paywall via stored reference")
-                paywallVC.dismiss(animated: true) {
-                    self.currentPaywallViewController = nil
-                }
+                paywallVC.dismiss(animated: true)
                 return
             }
             // Fallback: try to find by hierarchy
             if let presentingVC = self.findTopViewController(),
                let presented = presentingVC.presentedViewController as? MonetaiPaywallViewController {
                 print("[MonetaiSDK] Dismissing presented paywall via hierarchy lookup")
-                presented.dismiss(animated: true) {
-                    self.currentPaywallViewController = nil
-                }
+                presented.dismiss(animated: true)
             }
         }
     }
@@ -191,6 +211,37 @@ import UIKit
             return topVC
         }
         return nil
+    }
+
+    // MARK: - Helpers (Paywall VC construction)
+    private func makePaywallViewController(paywallParams: PaywallParams) -> MonetaiPaywallViewController {
+        let vc = MonetaiPaywallViewController(
+            paywallParams: paywallParams,
+            onClose: { [weak self] in
+                self?.hidePaywall()
+            },
+            onPurchase: { [weak self] in
+                self?.handlePurchase()
+            },
+            onTermsOfService: { [weak self] in
+                self?.handleTermsOfService()
+            },
+            onPrivacyPolicy: { [weak self] in
+                self?.handlePrivacyPolicy()
+            }
+        )
+        configurePresentationStyle(for: vc, style: paywallParams.style)
+        return vc
+    }
+
+    private func configurePresentationStyle(for viewController: UIViewController, style: PaywallStyle) {
+        if style == .compact {
+            viewController.modalPresentationStyle = .overCurrentContext
+            viewController.modalTransitionStyle = .crossDissolve
+        } else {
+            viewController.modalPresentationStyle = .overFullScreen
+            viewController.modalTransitionStyle = .crossDissolve
+        }
     }
 }
 

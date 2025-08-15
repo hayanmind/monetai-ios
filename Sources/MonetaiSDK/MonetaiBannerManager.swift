@@ -45,6 +45,8 @@ import UIKit
                     self.paywallManager?.showPaywall()
                 }
                 self.bannerVisible = true
+                // Trigger paywall preload when banner becomes visible
+                self.paywallManager?.preloadPaywall()
                 return
             }
             
@@ -89,6 +91,8 @@ import UIKit
             self.bannerView = banner
             self.bannerVisible = true
             print("[MonetaiSDK] BannerManager: Banner shown")
+            // Trigger paywall preload when banner becomes visible
+            self.paywallManager?.preloadPaywall()
         }
     }
     
