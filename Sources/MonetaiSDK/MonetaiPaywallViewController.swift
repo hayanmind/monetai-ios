@@ -97,6 +97,8 @@ import WebKit
         webViewConfiguration.userContentController = contentController
         
         webView = WKWebView(frame: .zero, configuration: webViewConfiguration)
+        
+        webView.scrollView.contentInsetAdjustmentBehavior = .never
         webView.navigationDelegate = self
         webView.uiDelegate = self
         // Append SDK UA token to existing UA for server-side validation
