@@ -1,5 +1,5 @@
 {
-  "originHash" : "310b8c893bf55326378a8bdc117a526e25d49bc6ca09fe0e9919c59d74538b2b",
+  "originHash" : "6f20c6887624b18c0b40be952170b7117d4d38c9181a098f8e293d2d8e956abd",
   "pins" : [
     {
       "identity" : "alamofire",
@@ -8,15 +8,6 @@
       "state" : {
         "revision" : "513364f870f6bfc468f9d2ff0a95caccc10044c5",
         "version" : "5.10.2"
-      }
-    },
-    {
-      "identity" : "monetai-ios",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/hayanmind/monetai-ios.git",
-      "state" : {
-        "branch" : "main",
-        "revision" : "aa1a03a87a78f7ba7c6a37a119674e34d49c7518"
       }
     },
     {
