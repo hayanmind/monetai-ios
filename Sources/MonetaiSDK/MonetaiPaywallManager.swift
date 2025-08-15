@@ -13,6 +13,7 @@ import UIKit
     private var paywallConfig: PaywallConfig?
     private var discountInfo: DiscountInfo?
     private var cancellables = Set<AnyCancellable>()
+    private var currentPaywallViewController: MonetaiPaywallViewController?
     
     // MARK: - Public Methods
     
@@ -36,6 +37,7 @@ import UIKit
         
         DispatchQueue.main.async {
             self.paywallVisible = true
+            self.presentPaywallAutomatically()
         }
     }
     
@@ -43,6 +45,7 @@ import UIKit
     @objc public func hidePaywall() {
         DispatchQueue.main.async {
             self.paywallVisible = false
+            self.dismissPresentedPaywallIfNeeded()
         }
     }
     
@@ -53,7 +56,7 @@ import UIKit
             DispatchQueue.main.async {
                 onPurchase {
                     // Ensure actual modal dismissal via SDK entry point
-                    MonetaiSDK.shared.hidePaywall()
+                    self.hidePaywall()
                 }
             }
         } else {
@@ -87,7 +90,7 @@ import UIKit
             paywallParams = nil
             return
         }
-        
+
         let paywallZ = paywallConfig.paywallZIndex
         let paywallElevation = paywallConfig.paywallElevation
         
@@ -102,8 +105,85 @@ import UIKit
             zIndex: paywallZ,
             elevation: paywallElevation
         )
-        
         paywallParams = params
+    }
+    
+    // MARK: - Automatic Paywall Presentation
+    private func presentPaywallAutomatically() {
+        guard let paywallParams = paywallParams else {
+            print("[MonetaiSDK] Auto present paywall skipped - paywallParams is null")
+            return
+        }
+        guard let presentingVC = findTopViewController() else {
+            print("[MonetaiSDK] Auto present paywall skipped - cannot find top view controller")
+            return
+        }
+        // Avoid double-present
+        if let presented = presentingVC.presentedViewController, presented is MonetaiPaywallViewController {
+            print("[MonetaiSDK] Paywall already presented")
+            return
+        }
+        let paywallVC = MonetaiPaywallViewController(
+            paywallParams: paywallParams,
+            onClose: { [weak self] in
+                self?.hidePaywall()
+            },
+            onPurchase: { [weak self] in
+                self?.handlePurchase()
+            },
+            onTermsOfService: { [weak self] in
+                self?.handleTermsOfService()
+            },
+            onPrivacyPolicy: { [weak self] in
+                self?.handlePrivacyPolicy()
+            }
+        )
+        paywallVC.modalPresentationStyle = .overFullScreen
+        paywallVC.modalTransitionStyle = .crossDissolve
+        print("[MonetaiSDK] Presenting paywall automatically")
+        presentingVC.present(paywallVC, animated: true)
+        currentPaywallViewController = paywallVC
+    }
+
+    private func dismissPresentedPaywallIfNeeded() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            if let paywallVC = self.currentPaywallViewController {
+                print("[MonetaiSDK] Dismissing presented paywall via stored reference")
+                paywallVC.dismiss(animated: true) {
+                    self.currentPaywallViewController = nil
+                }
+                return
+            }
+            // Fallback: try to find by hierarchy
+            if let presentingVC = self.findTopViewController(),
+               let presented = presentingVC.presentedViewController as? MonetaiPaywallViewController {
+                print("[MonetaiSDK] Dismissing presented paywall via hierarchy lookup")
+                presented.dismiss(animated: true) {
+                    self.currentPaywallViewController = nil
+                }
+            }
+        }
+    }
+    
+    private func findTopViewController() -> UIViewController? {
+        if let windowScene = UIApplication.shared.connectedScenes
+            .compactMap({ $0 as? UIWindowScene })
+            .first(where: { $0.activationState == .foregroundActive }) {
+            if let keyWindow = windowScene.windows.first(where: { $0.isKeyWindow }) ?? windowScene.windows.first {
+                // Prefer the top-most presented VC's view if available
+                var topVC = keyWindow.rootViewController
+                while let presented = topVC?.presentedViewController { topVC = presented }
+                return topVC
+            }
+        }
+        // Fallback for older APIs
+        if let window = UIApplication.shared.windows.first(where: { $0.isKeyWindow }) ?? UIApplication.shared.windows.first {
+            var topVC = window.rootViewController
+            while let presented = topVC?.presentedViewController { topVC = presented }
+            return topVC
+        }
+        return nil
     }
 }
 

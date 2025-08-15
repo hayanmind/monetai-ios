@@ -64,7 +64,7 @@ public extension LogEventOptions {
     
     // MARK: - Paywall Configuration
     private var paywallConfig: PaywallConfig?
-    private weak var currentPaywallViewController: MonetaiPaywallViewController?
+
     
     private override init() {
         super.init()
@@ -173,7 +173,7 @@ public extension LogEventOptions {
             if let paywallConfig = paywallConfig {
                 if let discountInfo = convertToDiscountInfo() {
                     paywallManager.configure(paywallConfig: paywallConfig, discountInfo: discountInfo)
-                    bannerManager.configure(paywallConfig: paywallConfig, discountInfo: discountInfo)
+                    bannerManager.configure(paywallConfig: paywallConfig, discountInfo: discountInfo, paywallManager: paywallManager)
                     // Auto control banner visibility based on discount state
                     if let discount = currentDiscount, discount.endedAt > Date(), paywallConfig.enabled {
                         if !bannerManager.bannerVisible {
@@ -328,7 +328,7 @@ public extension LogEventOptions {
         // Configure managers
         if let discountInfo = convertToDiscountInfo() {
             paywallManager.configure(paywallConfig: config, discountInfo: discountInfo)
-            bannerManager.configure(paywallConfig: config, discountInfo: discountInfo)
+                                bannerManager.configure(paywallConfig: config, discountInfo: discountInfo, paywallManager: paywallManager)
             // Auto control banner if discount is already loaded
             if let discount = currentDiscount, discount.endedAt > Date(), config.enabled {
                 if !bannerManager.bannerVisible { showBanner() }
@@ -338,17 +338,7 @@ public extension LogEventOptions {
         }
     }
     
-    /// Show paywall
-    @objc public func showPaywall() {
-        paywallManager.showPaywall()
-        presentPaywallAutomatically()
-    }
-    
-    /// Hide paywall
-    @objc public func hidePaywall() {
-        paywallManager.hidePaywall()
-        dismissPresentedPaywallIfNeeded()
-    }
+
     
     /// Show banner
     @available(*, deprecated, message: "External banner control is deprecated. The SDK controls banner automatically.")
@@ -362,114 +352,9 @@ public extension LogEventOptions {
         bannerManager.hideBanner()
     }
     
-    /// Present paywall view controller
-    /// - Parameter presentingViewController: View controller to present from
-    @objc public func presentPaywall(from presentingViewController: UIViewController) {
-        guard let paywallParams = paywallManager.paywallParams else {
-            print("[MonetaiSDK] Cannot present paywall - paywallParams is null")
-            return
-        }
-        
-        let paywallVC = MonetaiPaywallViewController(
-            paywallParams: paywallParams,
-            onClose: { [weak self] in
-                self?.hidePaywall()
-            },
-            onPurchase: { [weak self] in
-                self?.paywallManager.handlePurchase()
-            },
-            onTermsOfService: { [weak self] in
-                self?.paywallManager.handleTermsOfService()
-            },
-            onPrivacyPolicy: { [weak self] in
-                self?.paywallManager.handlePrivacyPolicy()
-            }
-        )
-        
-        paywallVC.modalPresentationStyle = .overFullScreen
-        paywallVC.modalTransitionStyle = .crossDissolve
-        
-        presentingViewController.present(paywallVC, animated: true)
-        currentPaywallViewController = paywallVC
-    }
 
-    // MARK: - Automatic Paywall Presentation
-    private func presentPaywallAutomatically() {
-        guard let paywallParams = paywallManager.paywallParams else {
-            print("[MonetaiSDK] Auto present paywall skipped - paywallParams is null")
-            return
-        }
-        guard let presentingVC = findTopViewController() else {
-            print("[MonetaiSDK] Auto present paywall skipped - cannot find top view controller")
-            return
-        }
-        // Avoid double-present
-        if let presented = presentingVC.presentedViewController, presented is MonetaiPaywallViewController {
-            print("[MonetaiSDK] Paywall already presented")
-            return
-        }
-        let paywallVC = MonetaiPaywallViewController(
-            paywallParams: paywallParams,
-            onClose: { [weak self] in
-                self?.hidePaywall()
-            },
-            onPurchase: { [weak self] in
-                self?.paywallManager.handlePurchase()
-            },
-            onTermsOfService: { [weak self] in
-                self?.paywallManager.handleTermsOfService()
-            },
-            onPrivacyPolicy: { [weak self] in
-                self?.paywallManager.handlePrivacyPolicy()
-            }
-        )
-        paywallVC.modalPresentationStyle = .overFullScreen
-        paywallVC.modalTransitionStyle = .crossDissolve
-        print("[MonetaiSDK] Presenting paywall automatically")
-        presentingVC.present(paywallVC, animated: true)
-        currentPaywallViewController = paywallVC
-    }
 
-    private func dismissPresentedPaywallIfNeeded() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            if let paywallVC = self.currentPaywallViewController {
-                print("[MonetaiSDK] Dismissing presented paywall via stored reference")
-                paywallVC.dismiss(animated: true) {
-                    self.currentPaywallViewController = nil
-                }
-                return
-            }
-            // Fallback: try to find by hierarchy
-            if let presentingVC = self.findTopViewController(),
-               let presented = presentingVC.presentedViewController as? MonetaiPaywallViewController {
-                print("[MonetaiSDK] Dismissing presented paywall via hierarchy lookup")
-                presented.dismiss(animated: true) {
-                    self.currentPaywallViewController = nil
-                }
-            } else {
-                print("[MonetaiSDK] No presented paywall to dismiss")
-            }
-        }
-    }
 
-    private func findTopViewController() -> UIViewController? {
-        if let windowScene = UIApplication.shared.connectedScenes
-            .compactMap({ $0 as? UIWindowScene })
-            .first(where: { $0.activationState == .foregroundActive }) {
-            if let keyWindow = windowScene.windows.first(where: { $0.isKeyWindow }) ?? windowScene.windows.first {
-                var topVC = keyWindow.rootViewController
-                while let presented = topVC?.presentedViewController { topVC = presented }
-                return topVC
-            }
-        }
-        if let window = UIApplication.shared.windows.first(where: { $0.isKeyWindow }) ?? UIApplication.shared.windows.first {
-            var topVC = window.rootViewController
-            while let presented = topVC?.presentedViewController { topVC = presented }
-            return topVC
-        }
-        return nil
-    }
     
     /// Deprecated: external banner presentation is no longer supported. The SDK manages banner lifecycle automatically.
     @available(*, deprecated, message: "Use SDK-managed banner. It is shown/hidden automatically based on discount state.")
@@ -573,17 +458,7 @@ public extension LogEventOptions {
         configurePaywall(config)
     }
     
-    /// Show paywall (Objective-C compatible)
-    @objc public func showPaywallWithCompletion(_ completion: @escaping () -> Void) {
-        showPaywall()
-        completion()
-    }
-    
-    /// Hide paywall (Objective-C compatible)
-    @objc public func hidePaywallWithCompletion(_ completion: @escaping () -> Void) {
-        hidePaywall()
-        completion()
-    }
+
     
     /// Show banner (Objective-C compatible)
     @available(*, deprecated, message: "External banner control is deprecated. The SDK controls banner automatically.")
@@ -599,14 +474,7 @@ public extension LogEventOptions {
         completion()
     }
     
-    /// Present paywall view controller (Objective-C compatible)
-    /// - Parameters:
-    ///   - presentingViewController: View controller to present from
-    ///   - completion: Completion handler
-    @objc public func presentPaywallFromViewController(_ presentingViewController: UIViewController, completion: @escaping () -> Void) {
-        presentPaywall(from: presentingViewController)
-        completion()
-    }
+
     
     /// Present banner view (Objective-C compatible)
     /// - Parameters:

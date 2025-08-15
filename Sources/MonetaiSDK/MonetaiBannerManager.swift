@@ -14,6 +14,7 @@ import UIKit
     private var discountInfo: DiscountInfo?
     private var cancellables = Set<AnyCancellable>()
     private weak var bannerView: MonetaiBannerView?
+    private weak var paywallManager: MonetaiPaywallManager?
     
     // MARK: - Public Methods
     
@@ -21,9 +22,11 @@ import UIKit
     /// - Parameters:
     ///   - paywallConfig: Paywall configuration
     ///   - discountInfo: Discount information
-    @objc public func configure(paywallConfig: PaywallConfig, discountInfo: DiscountInfo?) {
+    ///   - paywallManager: Paywall manager reference for banner interactions
+    @objc public func configure(paywallConfig: PaywallConfig, discountInfo: DiscountInfo?, paywallManager: MonetaiPaywallManager) {
         self.paywallConfig = paywallConfig
         self.discountInfo = discountInfo
+        self.paywallManager = paywallManager
         
         updateBannerParams()
     }
@@ -39,7 +42,7 @@ import UIKit
             // If already visible, ensure it's configured with latest params
             if let existing = self.bannerView {
                 existing.configure(bannerParams: bannerParams) {
-                    MonetaiSDK.shared.showPaywall()
+                    self.paywallManager?.showPaywall()
                 }
                 self.bannerVisible = true
                 return
@@ -73,7 +76,7 @@ import UIKit
             ])
             
             banner.configure(bannerParams: bannerParams) {
-                MonetaiSDK.shared.showPaywall()
+                self.paywallManager?.showPaywall()
             }
             
             banner.alpha = 0

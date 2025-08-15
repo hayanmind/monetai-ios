@@ -27,18 +27,25 @@ import WebKit
         self.onPaywall = onPaywall
         
         // Set corner radius based on style
+        let cornerRadius: CGFloat
         switch bannerParams.style {
         case .textFocused:
-            layer.cornerRadius = 12
+            cornerRadius = 12
         case .compact:
-            layer.cornerRadius = 16
+            cornerRadius = 16
         case .keyFeatureSummary:
-            layer.cornerRadius = 16
+            cornerRadius = 16
         case .highlightBenefits:
-            layer.cornerRadius = 12
+            cornerRadius = 12
         default:
-            layer.cornerRadius = 12
+            cornerRadius = 12
         }
+        
+        // Apply corner radius only to WebView
+        webView.layer.cornerRadius = cornerRadius
+        
+        // Enable corner radius clipping for WebView content
+        webView.clipsToBounds = true
         
         // Ensure corner radius is visible while keeping shadow
         layer.masksToBounds = false
@@ -47,7 +54,9 @@ import WebKit
     }
 
     private func setupWebView() {
-        clipsToBounds = true
+        // Set background to transparent
+        backgroundColor = .clear
+        
         // Corner radius will be set dynamically based on style in configure method
         layer.shadowColor = UIColor.black.cgColor
         layer.shadowOffset = CGSize(width: 0, height: 2)
