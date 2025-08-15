@@ -25,12 +25,30 @@ import WebKit
     @objc public func configure(bannerParams: BannerParams, onPaywall: @escaping () -> Void) {
         self.bannerParams = bannerParams
         self.onPaywall = onPaywall
+        
+        // Set corner radius based on style
+        switch bannerParams.style {
+        case .textFocused:
+            layer.cornerRadius = 12
+        case .compact:
+            layer.cornerRadius = 16
+        case .keyFeatureSummary:
+            layer.cornerRadius = 16
+        case .highlightBenefits:
+            layer.cornerRadius = 12
+        default:
+            layer.cornerRadius = 12
+        }
+        
+        // Ensure corner radius is visible while keeping shadow
+        layer.masksToBounds = false
+        
         loadBanner()
     }
 
     private func setupWebView() {
-        clipsToBounds = false
-        layer.cornerRadius = 12
+        clipsToBounds = true
+        // Corner radius will be set dynamically based on style in configure method
         layer.shadowColor = UIColor.black.cgColor
         layer.shadowOffset = CGSize(width: 0, height: 2)
         layer.shadowRadius = 8

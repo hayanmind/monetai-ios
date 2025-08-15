@@ -54,11 +54,22 @@ import UIKit
             banner.translatesAutoresizingMaskIntoConstraints = false
             containerView.addSubview(banner)
             
+            // Set banner height based on style
+            let bannerHeight: CGFloat
+            switch bannerParams.style {
+            case .textFocused:
+                bannerHeight = 45
+            case .compact:
+                bannerHeight = 68
+            default:
+                bannerHeight = 56
+            }
+            
             NSLayoutConstraint.activate([
                 banner.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 16),
                 banner.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -16),
                 banner.bottomAnchor.constraint(equalTo: containerView.safeAreaLayoutGuide.bottomAnchor, constant: -CGFloat(bannerParams.bottom)),
-                banner.heightAnchor.constraint(equalToConstant: 112)
+                banner.heightAnchor.constraint(equalToConstant: bannerHeight)
             ])
             
             banner.configure(bannerParams: bannerParams) {
