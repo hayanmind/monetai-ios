@@ -70,7 +70,7 @@ import UIKit
     
     /// Show paywall
     @objc public func showPaywall() {
-        guard let paywallParams = paywallParams else {
+        guard paywallParams != nil else {
             print("[MonetaiSDK] PaywallManager: Cannot show paywall - paywallParams is null (data not ready)")
             return
         }
