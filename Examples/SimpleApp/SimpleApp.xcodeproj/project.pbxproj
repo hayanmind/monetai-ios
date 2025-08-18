@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		2F0260F72E307A1100D9FFFA /* MonetaiSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 2F0260F62E307A1100D9FFFA /* MonetaiSDK */; };
+        2F0260F72E307A1100D9FFFA /* MonetaiSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 2F14ABBB2E4FFF0000E54C0C /* MonetaiSDK */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -82,9 +82,9 @@
 				2F0260DF2E30796D00D9FFFA /* SimpleApp */,
 			);
 			name = SimpleApp;
-			packageProductDependencies = (
-				2F0260F62E307A1100D9FFFA /* MonetaiSDK */,
-			);
+            packageProductDependencies = (
+                2F14ABBB2E4FFF0000E54C0C /* MonetaiSDK */,
+            );
 			productName = SimpleApp;
 			productReference = 2F0260DD2E30796D00D9FFFA /* SimpleApp.app */;
 			productType = "com.apple.product-type.application";
@@ -113,9 +113,9 @@
 			);
 			mainGroup = 2F0260D42E30796D00D9FFFA;
 			minimizedProjectReferenceProxies = 1;
-			packageReferences = (
-				2F0260F52E307A1100D9FFFA /* XCRemoteSwiftPackageReference "monetai-ios" */,
-			);
+            packageReferences = (
+                2F14ABBA2E4FFF0000E54C0C /* XCLocalSwiftPackageReference "MonetaiSDK" */,
+            );
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 2F0260DE2E30796D00D9FFFA /* Products */;
 			projectDirPath = "";
@@ -345,23 +345,19 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCRemoteSwiftPackageReference section */
-		2F0260F52E307A1100D9FFFA /* XCRemoteSwiftPackageReference "monetai-ios" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/hayanmind/monetai-ios.git";
-			requirement = {
-				branch = main;
-				kind = branch;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
+/* Begin XCLocalSwiftPackageReference section */
+        2F14ABBA2E4FFF0000E54C0C /* XCLocalSwiftPackageReference "MonetaiSDK" */ = {
+            isa = XCLocalSwiftPackageReference;
+            relativePath = ../../;
+        };
+/* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		2F0260F62E307A1100D9FFFA /* MonetaiSDK */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 2F0260F52E307A1100D9FFFA /* XCRemoteSwiftPackageReference "monetai-ios" */;
-			productName = MonetaiSDK;
-		};
+        2F14ABBB2E4FFF0000E54C0C /* MonetaiSDK */ = {
+            isa = XCSwiftPackageProductDependency;
+            package = 2F14ABBA2E4FFF0000E54C0C /* XCLocalSwiftPackageReference "MonetaiSDK" */;
+            productName = MonetaiSDK;
+        };
 /* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 2F0260D52E30796D00D9FFFA /* Project object */;

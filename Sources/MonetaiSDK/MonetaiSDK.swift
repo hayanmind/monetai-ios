@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import UIKit
 
 /// Struct representing event logging options
 @objc public class LogEventOptions: NSObject {
@@ -56,6 +57,17 @@ public extension LogEventOptions {
     
     // MARK: - Objective-C Compatible Callback
     @objc public var onDiscountInfoChangeCallback: ((Any?) -> Void)?
+    
+    // MARK: - Paywall Management
+    public let paywallManager = MonetaiPaywallManager()
+    public let bannerManager = MonetaiBannerManager()
+    
+    // MARK: - Paywall Configuration
+    private var paywallConfig: PaywallConfig?
+    
+    // MARK: - Subscription State
+    private var isSubscriber: Bool = false
+
     
     private override init() {
         super.init()
@@ -159,6 +171,11 @@ public extension LogEventOptions {
             // Call callback
             onDiscountInfoChange?(discount)
             onDiscountInfoChangeCallback?(discount as Any?)
+            
+            // Update paywall managers if config exists
+            if paywallConfig != nil {
+                configureManagersAndUpdateBanner()
+            }
             
             print("[MonetaiSDK] Discount information auto-load complete: \(discount != nil ? "Discount available" : "No discount")")
             
@@ -290,6 +307,70 @@ public extension LogEventOptions {
     }
     
     /// Return current exposure time (seconds)
+    
+    // MARK: - Paywall Methods
+    
+    /// Configure paywall with the specified configuration
+    /// - Parameter config: Paywall configuration
+    @objc public func configurePaywall(_ config: PaywallConfig) {
+        self.paywallConfig = config
+        
+        // Configure managers and update banner
+        configureManagersAndUpdateBanner()
+    }
+    
+    /// Set initial subscription status (can be called before or after configurePaywall)
+    /// - Parameter isSubscriber: Whether the user is currently a subscriber
+    @objc public func setSubscriptionStatus(_ isSubscriber: Bool) {
+        self.isSubscriber = isSubscriber
+        
+        // If paywall is already configured, update banner visibility
+        if paywallConfig != nil {
+            configureManagersAndUpdateBanner()
+        }
+        
+        print("[MonetaiSDK] Subscription status set: \(isSubscriber ? "Subscriber" : "Non-subscriber")")
+    }
+    
+    // MARK: - Private Helper Methods
+    
+    /// Configure paywall and banner managers, then update banner visibility
+    private func configureManagersAndUpdateBanner() {
+        guard let paywallConfig = paywallConfig,
+              let discountInfo = convertToDiscountInfo() else { return }
+        
+        // Configure managers
+        paywallManager.configure(paywallConfig: paywallConfig, discountInfo: discountInfo)
+        bannerManager.configure(paywallConfig: paywallConfig, discountInfo: discountInfo, paywallManager: paywallManager)
+        
+        // Auto control banner visibility based on subscription status, discount state and paywall config
+        guard let discount = currentDiscount,
+              discount.endedAt > Date(),
+              paywallConfig.enabled,
+              !self.isSubscriber else {
+            // Hide banner if user is subscriber, no discount, expired, or paywall disabled
+            if bannerManager.bannerVisible {
+                bannerManager.hideBanner()
+            }
+            return
+        }
+        
+        // Show banner if all conditions are met (active discount, enabled, not a subscriber)
+        if !bannerManager.bannerVisible {
+            bannerManager.showBanner()
+        }
+    }
+    
+    private func convertToDiscountInfo() -> DiscountInfo? {
+        guard let currentDiscount = currentDiscount else { return nil }
+        
+        return DiscountInfo(
+            startedAt: currentDiscount.startedAt,
+            endedAt: currentDiscount.endedAt,
+            userId: currentDiscount.appUserId,
+            sdkKey: currentDiscount.sdkKey
+        )
+    }
     public func getExposureTimeSec() -> Int? {
         return exposureTimeSec
     }
@@ -364,6 +445,22 @@ public extension LogEventOptions {
             }
         }
     }
+    
+    // MARK: - Paywall Methods (Objective-C Compatible)
+    
+    /// Configure paywall (Objective-C compatible)
+    /// - Parameter config: Paywall configuration
+    @objc public func configurePaywallWithConfig(_ config: PaywallConfig) {
+        configurePaywall(config)
+    }
+    
+
+    
+
+    
+
+    
+
     
     // MARK: - Private Methods
     

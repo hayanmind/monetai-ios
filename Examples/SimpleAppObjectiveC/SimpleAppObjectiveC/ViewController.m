@@ -7,7 +7,6 @@
 
 #import "ViewController.h"
 #import "Constants.h"
-#import "DiscountBannerView.h"
 
 @interface ViewController ()
 
@@ -17,7 +16,6 @@
 @property (nonatomic, strong) UIButton *logEventButton;
 @property (nonatomic, strong) UILabel *discountStatusLabel;
 @property (nonatomic, strong) UILabel *resultLabel;
-@property (nonatomic, strong) DiscountBannerView *discountBannerView;
 @property (nonatomic, strong) NSTimer *statusCheckTimer;
 
 @end
@@ -154,6 +152,67 @@
     
     // Start checking SDK status periodically
     [self startSDKStatusCheck];
+    
+    // Configure paywall
+    [self configurePaywall];
+}
+
+- (void)configurePaywall {
+    // Create features array using the correct initializer
+    Feature *feature1 = [[Feature alloc] initWithTitle:@"Unlimited Access" 
+                                          description:@"Use all premium features without limits" 
+                                         isPremiumOnly:NO];
+    
+    Feature *feature2 = [[Feature alloc] initWithTitle:@"Advanced Analytics" 
+                                          description:@"AI-powered insights" 
+                                         isPremiumOnly:YES];
+    
+    NSArray<Feature *> *features = @[feature1, feature2];
+    
+    // Create paywall configuration using the new Options-based approach
+    PaywallConfigOptions *options = [[PaywallConfigOptions alloc] init];
+    options.features = features;
+    
+    PaywallConfig *config = [[PaywallConfig alloc] initWithDiscountPercent:30
+                                                              regularPrice:@"$99.99"
+                                                           discountedPrice:@"$69.99"
+                                                                     locale:@"en"
+                                                                      style:PaywallStyleHighlightBenefits
+                                                                   options:options];
+    
+    // Set up callbacks using the correct property names
+    __weak typeof(self) weakSelf = self;
+    config.onPurchase = ^(void (^close)(void)) {
+        NSLog(@"[SimpleAppObjectiveC] onPurchase called");
+        dispatch_async(dispatch_get_main_queue(), ^{
+            weakSelf.resultLabel.text = @"🛒 Purchase flow started";
+            weakSelf.resultLabel.textColor = [UIColor systemBlueColor];
+        });
+        
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            NSLog(@"[SimpleAppObjectiveC] calling close()");
+            close();
+            [[MonetaiSDK shared] setSubscriptionStatus:YES];
+        });
+    };
+    
+    config.onTermsOfService = ^{
+        NSLog(@"[SimpleAppObjectiveC] onTermsOfService called");
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [weakSelf presentAlertWithTitle:@"Terms of Service" message:@"Open Terms of Service URL"];
+        });
+    };
+    
+    config.onPrivacyPolicy = ^{
+        NSLog(@"[SimpleAppObjectiveC] onPrivacyPolicy called");
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [weakSelf presentAlertWithTitle:@"Privacy Policy" message:@"Open Privacy Policy URL"];
+        });
+    };
+    
+    // Configure the paywall
+    [[MonetaiSDK shared] configurePaywallWithConfig:config];
+    [[MonetaiSDK shared] setSubscriptionStatus:NO];
 }
 
 - (void)setupNotifications {
@@ -232,7 +291,7 @@
         NSDate *endTime = discountInfo.endedAt;
         
         if ([now compare:endTime] == NSOrderedAscending) {
-            // Discount is valid - show banner
+            // Discount is valid
             NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
             formatter.dateStyle = NSDateFormatterShortStyle;
             formatter.timeStyle = NSDateFormatterShortStyle;
@@ -240,50 +299,28 @@
             
             self.discountStatusLabel.text = [NSString stringWithFormat:@"Discount: ✅ Active (Expires: %@)", formattedDate];
             self.discountStatusLabel.textColor = [UIColor systemGreenColor];
-            [self showDiscountBanner:discountInfo];
+            
+            // Update result label
+            self.resultLabel.text = @"🎉 Discount is now active!\nSpecial offer available.";
+            self.resultLabel.textColor = [UIColor systemGreenColor];
         } else {
             // Discount expired
             self.discountStatusLabel.text = @"Discount: ❌ Expired";
             self.discountStatusLabel.textColor = [UIColor systemRedColor];
-            [self hideDiscountBanner];
+            
+            // Update result label
+            self.resultLabel.text = @"Discount offer has expired";
+            self.resultLabel.textColor = [UIColor systemRedColor];
         }
     } else {
         // No discount
         self.discountStatusLabel.text = @"Discount: None";
         self.discountStatusLabel.textColor = [UIColor secondaryLabelColor];
-        [self hideDiscountBanner];
+        
+        // Update result label
+        self.resultLabel.text = @"No active discount offers";
+        self.resultLabel.textColor = [UIColor secondaryLabelColor];
     }
-}
-
-- (void)showDiscountBanner:(AppUserDiscount *)discount {
-    // Remove existing banner if any
-    [self hideDiscountBanner];
-    
-    // Create and add new banner
-    DiscountBannerView *bannerView = [[DiscountBannerView alloc] init];
-    bannerView.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.view addSubview:bannerView];
-    
-    // Position banner at the bottom
-    [NSLayoutConstraint activateConstraints:@[
-        [bannerView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
-        [bannerView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
-        [bannerView.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor constant:-20],
-        [bannerView.heightAnchor constraintEqualToConstant:100]
-    ]];
-    
-    // Show discount
-    [bannerView showDiscount:discount];
-    self.discountBannerView = bannerView;
-    
-    // Update result label
-    self.resultLabel.text = @"🎉 Discount banner displayed!\nSpecial offer is now active.";
-    self.resultLabel.textColor = [UIColor systemGreenColor];
-}
-
-- (void)hideDiscountBanner {
-    [self.discountBannerView hideDiscount];
-    self.discountBannerView = nil;
 }
 
 #pragma mark - Button Actions
@@ -342,6 +379,51 @@
     });
     
     NSLog(@"Event logged: button_click");
+}
+
+#pragma mark - Helper Methods
+
+- (void)presentAlertWithTitle:(NSString *)title message:(NSString *)message {
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:title
+                                                                   message:message
+                                                            preferredStyle:UIAlertControllerStyleAlert];
+    
+    UIAlertAction *okAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil];
+    [alert addAction:okAction];
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        UIViewController *presenter = self.presentedViewController ?: [self topMostViewController] ?: self;
+        [presenter presentViewController:alert animated:YES completion:nil];
+    });
+}
+
+- (UIViewController *)topMostViewController {
+    UIWindow *keyWindow = nil;
+    
+    if (@available(iOS 13.0, *)) {
+        for (UIWindowScene *windowScene in [UIApplication sharedApplication].connectedScenes) {
+            if (windowScene.activationState == UISceneActivationStateForegroundActive) {
+                for (UIWindow *window in windowScene.windows) {
+                    if (window.isKeyWindow) {
+                        keyWindow = window;
+                        break;
+                    }
+                }
+                if (keyWindow) break;
+            }
+        }
+    }
+    
+    if (!keyWindow) {
+        keyWindow = [UIApplication sharedApplication].windows.firstObject;
+    }
+    
+    UIViewController *topVC = keyWindow.rootViewController;
+    while (topVC.presentedViewController) {
+        topVC = topVC.presentedViewController;
+    }
+    
+    return topVC;
 }
 
 @end

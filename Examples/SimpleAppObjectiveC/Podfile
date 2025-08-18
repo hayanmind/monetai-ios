@@ -7,7 +7,9 @@ target 'SimpleAppObjectiveC' do
 
   # Pods for SimpleAppObjectiveC
   # Remote MonetaiSDK pod
-  pod 'MonetaiSDK'
+  # pod 'MonetaiSDK'
+  # Local MonetaiSDK pod
+  pod 'MonetaiSDK', :path => '../../'
   
   # Add other dependencies if needed
   # pod 'Alamofire', '~> 5.8'

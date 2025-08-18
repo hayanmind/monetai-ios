@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		2F14CEF22E2E06F400E54C0C /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 2F14CEF12E2E06F400E54C0C /* RevenueCat */; };
 		2F14CEF42E2E06F400E54C0C /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 2F14CEF32E2E06F400E54C0C /* RevenueCatUI */; };
+		2F48796D2E4F35D500AD8631 /* MonetaiSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 2F48796C2E4F35D500AD8631 /* MonetaiSDK */; };
 		2FA5DB8A2E2F1FC300E373C6 /* MonetaiSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 2FA5DB892E2F1FC300E373C6 /* MonetaiSDK */; };
 /* End PBXBuildFile section */
 
@@ -30,6 +31,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2FA5DB8A2E2F1FC300E373C6 /* MonetaiSDK in Frameworks */,
+				2F48796D2E4F35D500AD8631 /* MonetaiSDK in Frameworks */,
 				2F14CEF22E2E06F400E54C0C /* RevenueCat in Frameworks */,
 				2F14CEF42E2E06F400E54C0C /* RevenueCatUI in Frameworks */,
 			);
@@ -77,6 +79,7 @@
 				2F14CEF12E2E06F400E54C0C /* RevenueCat */,
 				2F14CEF32E2E06F400E54C0C /* RevenueCatUI */,
 				2FA5DB892E2F1FC300E373C6 /* MonetaiSDK */,
+				2F48796C2E4F35D500AD8631 /* MonetaiSDK */,
 			);
 			productName = SwiftPackageManagerExample;
 			productReference = 2F14CEDC2E2E050D00E54C0C /* SwiftPackageManagerExample.app */;
@@ -108,7 +111,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				2F14CEF02E2E06F400E54C0C /* XCRemoteSwiftPackageReference "purchases-ios-spm" */,
-				2FA5DB882E2F1FC300E373C6 /* XCRemoteSwiftPackageReference "monetai-ios" */,
+				2FA5DB882E2F1FC300E373C6 /* XCLocalSwiftPackageReference "../../" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 2F14CEDD2E2E050D00E54C0C /* Products */;
@@ -341,6 +344,13 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCLocalSwiftPackageReference section */
+		2FA5DB882E2F1FC300E373C6 /* XCLocalSwiftPackageReference "../../" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../../;
+		};
+/* End XCLocalSwiftPackageReference section */
+
 /* Begin XCRemoteSwiftPackageReference section */
 		2F14CEF02E2E06F400E54C0C /* XCRemoteSwiftPackageReference "purchases-ios-spm" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -348,14 +358,6 @@
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 5.33.0;
-			};
-		};
-		2FA5DB882E2F1FC300E373C6 /* XCRemoteSwiftPackageReference "monetai-ios" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/hayanmind/monetai-ios.git";
-			requirement = {
-				branch = main;
-				kind = branch;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -371,10 +373,13 @@
 			package = 2F14CEF02E2E06F400E54C0C /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
 			productName = RevenueCatUI;
 		};
-
+		2F48796C2E4F35D500AD8631 /* MonetaiSDK */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MonetaiSDK;
+		};
 		2FA5DB892E2F1FC300E373C6 /* MonetaiSDK */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 2FA5DB882E2F1FC300E373C6 /* XCRemoteSwiftPackageReference "monetai-ios" */;
+			package = 2FA5DB882E2F1FC300E373C6 /* XCLocalSwiftPackageReference "../../" */;
 			productName = MonetaiSDK;
 		};
 /* End XCSwiftPackageProductDependency section */
