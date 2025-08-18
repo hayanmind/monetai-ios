@@ -319,23 +319,6 @@ public extension LogEventOptions {
         configureManagersAndUpdateBanner()
     }
     
-    /// Update only the subscription status without reconfiguring the entire paywall
-    /// - Parameter isSubscriber: Whether the user is currently a subscriber
-    @objc public func updateSubscriptionStatus(_ isSubscriber: Bool) {
-        guard paywallConfig != nil else {
-            print("[MonetaiSDK] Warning: Cannot update subscription status - paywall not configured")
-            return
-        }
-        
-        // Update the subscription status
-        self.isSubscriber = isSubscriber
-        
-        // Reconfigure managers and update banner visibility
-        configureManagersAndUpdateBanner()
-        
-        print("[MonetaiSDK] Subscription status updated: \(isSubscriber ? "Subscriber" : "Non-subscriber")")
-    }
-    
     /// Set initial subscription status (can be called before or after configurePaywall)
     /// - Parameter isSubscriber: Whether the user is currently a subscriber
     @objc public func setSubscriptionStatus(_ isSubscriber: Bool) {
