@@ -77,11 +77,6 @@ final class APIClient: Sendable {
                             continuation.resume(returning: value)
                         } catch {
                             print("[MonetaiSDK] Decoding error: \(error)")
-                            if let jsonString = String(data: responseData, encoding: .utf8) {
-                                print("[MonetaiSDK] Response data: '\(jsonString)'")
-                            } else {
-                                print("[MonetaiSDK] Response data: <unable to decode as string>")
-                            }
                             continuation.resume(throwing: MonetaiError.networkError(error))
                         }
                     case .failure(let error):

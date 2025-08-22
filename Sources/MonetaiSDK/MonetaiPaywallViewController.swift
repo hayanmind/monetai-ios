@@ -184,7 +184,7 @@ import WebKit
         let request = URLRequest(url: url)
         
         loadingIndicator.startAnimating()
-        print("[MonetaiSDK] Loading paywall URL: \(url.absoluteString)")
+        print("[MonetaiSDK] Loading paywall started")
         webView.load(request)
     }
     
@@ -230,7 +230,6 @@ import WebKit
         components.queryItems = queryItems
         
         let built = components.url!
-        print("[MonetaiSDK] Loading paywall URL: \(built.absoluteString)")
         return built
     }
     
@@ -313,7 +312,7 @@ extension MonetaiPaywallViewController: WKNavigationDelegate, WKScriptMessageHan
             print("[MonetaiSDK] Paywall WebView message: non-string body received")
             return
         }
-        print("[MonetaiSDK] Paywall WebView message received: name=\(message.name), action=\(action)")
+        
         switch action {
         case "CLICK_PURCHASE_BUTTON":
             print("[MonetaiSDK] Action: CLICK_PURCHASE_BUTTON → onPurchase()")

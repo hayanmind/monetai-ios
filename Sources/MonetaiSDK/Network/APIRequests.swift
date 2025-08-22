@@ -84,15 +84,10 @@ struct APIRequests {
                 do {
                     _ = try JSONSerialization.data(withJSONObject: params)
                     dict["params"] = params
-                    print("[MonetaiSDK] Event parameter serialization successful: \(params)")
                 } catch {
-                    print("[MonetaiSDK] Event parameter serialization failed: \(error)")
-                    print("[MonetaiSDK] Problematic parameters: \(params)")
                     // Exclude parameters that cannot be serialized
                 }
             }
-            
-            print("[MonetaiSDK] Final API request data: \(dict)")
             return dict
         }
     }

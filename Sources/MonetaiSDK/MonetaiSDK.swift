@@ -176,9 +176,6 @@ public extension LogEventOptions {
             if paywallConfig != nil {
                 configureManagersAndUpdateBanner()
             }
-            
-            print("[MonetaiSDK] Discount information auto-load complete: \(discount != nil ? "Discount available" : "No discount")")
-            
         } catch {
             print("[MonetaiSDK] Discount information auto-load failed: \(error)")
             currentDiscount = nil
@@ -191,19 +188,11 @@ public extension LogEventOptions {
     /// - Parameter options: Event options to log
     @MainActor
     public func logEvent(_ options: LogEventOptions) async {
-        print("[MonetaiSDK] Event logging request: \(options.eventName)")
-        print("[MonetaiSDK] Event parameters: \(options.params ?? [:])")
-        
         guard let sdkKey = sdkKey, let userId = userId else {
             // Add to queue if SDK is not initialized
             pendingEvents.append(options)
-            print("[MonetaiSDK] ⏳ Before SDK initialization - Added to queue: \(options.eventName)")
-            print("[MonetaiSDK] 📦 Current number of pending events: \(pendingEvents.count)")
-            print("[MonetaiSDK] 📋 Pending events list: \(pendingEvents.map { $0.eventName })")
             return
         }
-        
-        print("[MonetaiSDK] ✅ SDK initialized - Sending immediately: \(options.eventName)")
         
         do {
             try await APIRequests.createEvent(
@@ -470,19 +459,13 @@ public extension LogEventOptions {
         let events = pendingEvents
         pendingEvents.removeAll()
         
-        print("[MonetaiSDK] 🚀 Starting to process pending events")
-        print("[MonetaiSDK] 📊 Number of events to process: \(events.count)")
-        
         if events.isEmpty {
-            print("[MonetaiSDK] ℹ️ No pending events to process")
             return
         }
         
-        print("[MonetaiSDK] 📋 List of events to process: \(events.map { $0.eventName })")
+        print("[MonetaiSDK] 🚀 Processing \(events.count) pending events")
         
-        for (index, event) in events.enumerated() {
-            print("[MonetaiSDK] 📤 Processing \(index + 1)/\(events.count): \(event.eventName)")
-            
+        for event in events {
             do {
                 try await APIRequests.createEvent(
                     sdkKey: sdkKey,
@@ -491,14 +474,14 @@ public extension LogEventOptions {
                     params: event.params,
                     createdAt: event.createdAt
                 )
-                print("[MonetaiSDK] ✅ \(index + 1)/\(events.count) Success: \(event.eventName)")
+                print("[MonetaiSDK] ✅ Event processed: \(event.eventName)")
             } catch {
-                print("[MonetaiSDK] ❌ \(index + 1)/\(events.count) Failed: \(event.eventName)")
+                print("[MonetaiSDK] ❌ Event processing failed: \(event.eventName)")
                 print("[MonetaiSDK] Error details: \(error)")
             }
         }
         
-        print("[MonetaiSDK] 🎉 Pending events processing complete")
+        print("[MonetaiSDK] 🎉 All pending events processed")
     }
     
     private func handleNonPurchaserPrediction(sdkKey: String, userId: String, exposureTimeSec: Int) async {

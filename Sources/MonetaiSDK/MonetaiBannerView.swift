@@ -121,10 +121,9 @@ import WebKit
 
     private func loadBanner() {
         guard let url = buildBannerURL() else { return }
-        print("[MonetaiSDK] Banner loading started, URL: \(url.absoluteString)")
+        print("[MonetaiSDK] Banner loading started")
         hasWebViewError = false
         loadingIndicator.startAnimating()
-        print("[MonetaiSDK] Loading banner URL: \(url.absoluteString)")
         webView.load(URLRequest(url: url))
     }
 
@@ -135,7 +134,7 @@ import WebKit
             print("[MonetaiSDK] Banner WebView message: non-string body received")
             return
         }
-        print("[MonetaiSDK] Banner WebView message received: name=\(message.name), action=\(data)")
+        
         switch data {
         case "CLICK_BANNER":
             onPaywall?()
