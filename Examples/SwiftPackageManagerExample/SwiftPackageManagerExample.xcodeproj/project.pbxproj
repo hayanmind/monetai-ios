@@ -10,6 +10,7 @@
 		2F14CEF22E2E06F400E54C0C /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 2F14CEF12E2E06F400E54C0C /* RevenueCat */; };
 		2F14CEF42E2E06F400E54C0C /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 2F14CEF32E2E06F400E54C0C /* RevenueCatUI */; };
 		2F48796D2E4F35D500AD8631 /* MonetaiSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 2F48796C2E4F35D500AD8631 /* MonetaiSDK */; };
+		2F9316C52E5808B400111B4D /* MonetaiSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 2F9316C42E5808B400111B4D /* MonetaiSDK */; };
 		2FA5DB8A2E2F1FC300E373C6 /* MonetaiSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 2FA5DB892E2F1FC300E373C6 /* MonetaiSDK */; };
 /* End PBXBuildFile section */
 
@@ -30,6 +31,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2F9316C52E5808B400111B4D /* MonetaiSDK in Frameworks */,
 				2FA5DB8A2E2F1FC300E373C6 /* MonetaiSDK in Frameworks */,
 				2F48796D2E4F35D500AD8631 /* MonetaiSDK in Frameworks */,
 				2F14CEF22E2E06F400E54C0C /* RevenueCat in Frameworks */,
@@ -80,6 +82,7 @@
 				2F14CEF32E2E06F400E54C0C /* RevenueCatUI */,
 				2FA5DB892E2F1FC300E373C6 /* MonetaiSDK */,
 				2F48796C2E4F35D500AD8631 /* MonetaiSDK */,
+				2F9316C42E5808B400111B4D /* MonetaiSDK */,
 			);
 			productName = SwiftPackageManagerExample;
 			productReference = 2F14CEDC2E2E050D00E54C0C /* SwiftPackageManagerExample.app */;
@@ -374,6 +377,10 @@
 			productName = RevenueCatUI;
 		};
 		2F48796C2E4F35D500AD8631 /* MonetaiSDK */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MonetaiSDK;
+		};
+		2F9316C42E5808B400111B4D /* MonetaiSDK */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = MonetaiSDK;
 		};
