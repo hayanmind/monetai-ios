@@ -29,6 +29,33 @@ public extension LogEventOptions {
     }
 }
 
+/// Struct representing view product item parameters
+@objc public class ViewProductItemParams: NSObject {
+    @objc public let productId: String
+    @objc public let price: Double
+    @objc public let regularPrice: Double
+    @objc public let currencyCode: String
+    @objc public let month: NSNumber?
+    
+    public init(productId: String, price: Double, regularPrice: Double, currencyCode: String, month: Int?) {
+        self.productId = productId
+        self.price = price
+        self.regularPrice = regularPrice
+        self.currencyCode = currencyCode
+        self.month = month != nil ? NSNumber(value: month!) : nil
+        super.init()
+    }
+    
+    @objc public init(productId: String, price: Double, regularPrice: Double, currencyCode: String, month: NSNumber?) {
+        self.productId = productId
+        self.price = price
+        self.regularPrice = regularPrice
+        self.currencyCode = currencyCode
+        self.month = month
+        super.init()
+    }
+}
+
 /// MonetaiSDK main class
 @objc public class MonetaiSDK: NSObject, ObservableObject {
     
@@ -219,6 +246,28 @@ public extension LogEventOptions {
         await logEvent(options)
     }
     
+    /// Log view product item event
+    /// - Parameter params: Product item parameters
+    @MainActor
+    public func logViewProductItem(_ params: ViewProductItemParams) async {
+        guard let sdkKey = sdkKey, let userId = userId else {
+            print("[MonetaiSDK] ⚠️ SDK not initialized. Cannot log view product item.")
+            return
+        }
+        
+        do {
+            try await APIRequests.viewProductItem(
+                sdkKey: sdkKey,
+                userId: userId,
+                params: params
+            )
+            print("[MonetaiSDK] 🎉 View product item logged: \(params.productId)")
+        } catch {
+            print("[MonetaiSDK] ❌ View product item logging failed: \(params.productId)")
+            print("[MonetaiSDK] Error details: \(error)")
+        }
+    }
+    
     /// Perform user prediction
     /// - Returns: Prediction result
     @MainActor
@@ -406,6 +455,14 @@ public extension LogEventOptions {
     @objc public func logEventWithEventName(_ eventName: String, params: [String: Any]? = nil) {
         Task {
             await logEvent(eventName: eventName, params: params)
+        }
+    }
+    
+    /// Log view product item event (Objective-C compatible)
+    /// - Parameter params: Product item parameters
+    @objc public func logViewProductItemWithParams(_ params: ViewProductItemParams) {
+        Task {
+            await logViewProductItem(params)
         }
     }
     

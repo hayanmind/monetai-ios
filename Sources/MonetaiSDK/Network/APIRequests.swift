@@ -110,6 +110,56 @@ struct APIRequests {
         )
     }
     
+    // MARK: - View Product Item
+    struct ViewProductItemRequest {
+        let sdkKey: String
+        let userId: String
+        let params: ViewProductItemParams
+        let createdAt: Date
+        let platform: String
+        
+        var dictionary: [String: Any] {
+            let formatter = ISO8601DateFormatter()
+            formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+            
+            var dict: [String: Any] = [
+                "sdkKey": sdkKey,
+                "userId": userId,
+                "productId": params.productId,
+                "price": params.price,
+                "regularPrice": params.regularPrice,
+                "currencyCode": params.currencyCode,
+                "createdAt": formatter.string(from: createdAt),
+                "platform": platform
+            ]
+            
+            if let month = params.month {
+                dict["month"] = month
+            } else {
+                dict["month"] = NSNull()
+            }
+            
+            return dict
+        }
+    }
+    
+    static func viewProductItem(sdkKey: String, userId: String, params: ViewProductItemParams, createdAt: Date = Date()) async throws {
+        let request = ViewProductItemRequest(
+            sdkKey: sdkKey,
+            userId: userId,
+            params: params,
+            createdAt: createdAt,
+            platform: "ios"
+        )
+        
+        let _: EmptyResponse = try await APIClient.shared.request(
+            endpoint: "/events/view-product-item",
+            method: .post,
+            parameters: request.dictionary,
+            encoding: JSONEncoding.default
+        )
+    }
+    
     // MARK: - Predict
     struct PredictRequest: Codable {
         let sdkKey: String
