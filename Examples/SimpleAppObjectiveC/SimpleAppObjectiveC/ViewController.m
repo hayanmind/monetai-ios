@@ -7,6 +7,19 @@
 
 #import "ViewController.h"
 #import "Constants.h"
+#import "FakeProductView.h"
+
+typedef struct {
+    __unsafe_unretained NSString *productId;
+    double price;
+    double regularPrice;
+    __unsafe_unretained NSString *currencyCode;
+    NSNumber *month;
+    __unsafe_unretained NSString *title;
+    __unsafe_unretained NSString *regularPriceText;
+    __unsafe_unretained NSString *discountPriceText;
+    __unsafe_unretained NSString *descriptionText;
+} FakeProductInfo;
 
 @interface ViewController ()
 
@@ -18,12 +31,29 @@
 @property (nonatomic, strong) UILabel *resultLabel;
 @property (nonatomic, strong) NSTimer *statusCheckTimer;
 
+// Fake product UI
+@property (nonatomic, strong) FakeProductView *fakeProductView;
+@property (nonatomic, assign) FakeProductInfo fakeProduct;
+
 @end
 
 @implementation ViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    
+    // Fake product (single source of truth for UI + logging)
+    self.fakeProduct = (FakeProductInfo){
+        .productId = @"fake_product_monthly",
+        .price = 9.99,
+        .regularPrice = 14.99,
+        .currencyCode = @"USD",
+        .month = @1,
+        .title = @"Fake Monthly Plan",
+        .regularPriceText = @"$14.99",
+        .discountPriceText = @"$9.99 / month",
+        .descriptionText = @"Demo-only fake product to showcase logViewProductItem."
+    };
     
     [self setupUI];
     [self setupMonetaiSDK];
@@ -102,6 +132,8 @@
     self.resultLabel.translatesAutoresizingMaskIntoConstraints = NO;
     [self.view addSubview:self.resultLabel];
     
+    [self setupFakeProductView];
+    
     [self setupConstraints];
 }
 
@@ -135,8 +167,31 @@
         [self.resultLabel.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor],
         [self.resultLabel.topAnchor constraintEqualToAnchor:self.discountStatusLabel.bottomAnchor constant:20],
         [self.resultLabel.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor constant:20],
-        [self.resultLabel.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor constant:-20]
+        [self.resultLabel.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor constant:-20],
+        
+        // Fake product container
+        [self.fakeProductView.topAnchor constraintEqualToAnchor:self.resultLabel.bottomAnchor constant:30],
+        [self.fakeProductView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor constant:20],
+        [self.fakeProductView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor constant:-20],
+        [self.fakeProductView.bottomAnchor constraintLessThanOrEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor constant:-20]
     ]];
+}
+
+#pragma mark - Fake Product UI
+
+- (void)setupFakeProductView {
+    self.fakeProductView = [[FakeProductView alloc] init];
+    [self.fakeProductView configureWithTitle:self.fakeProduct.title
+                                regularPrice:self.fakeProduct.regularPriceText
+                               discountPrice:self.fakeProduct.discountPriceText
+                                  description:self.fakeProduct.descriptionText];
+    
+    __weak typeof(self) weakSelf = self;
+    self.fakeProductView.onAppear = ^{
+        [weakSelf logFakeProductView];
+    };
+    
+    [self.view addSubview:self.fakeProductView];
 }
 
 #pragma mark - MonetaiSDK Setup
@@ -382,6 +437,15 @@
 }
 
 #pragma mark - Helper Methods
+
+- (void)logFakeProductView {
+    ViewProductItemParams *params = [[ViewProductItemParams alloc] initWithProductId:self.fakeProduct.productId
+                                                                               price:self.fakeProduct.price
+                                                                        regularPrice:self.fakeProduct.regularPrice
+                                                                        currencyCode:self.fakeProduct.currencyCode
+                                                                               month:self.fakeProduct.month];
+    [[MonetaiSDK shared] logViewProductItemWithParams:params];
+}
 
 - (void)presentAlertWithTitle:(NSString *)title message:(NSString *)message {
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:title

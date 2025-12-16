@@ -15,6 +15,7 @@
 		2F93F0E32E3219B100D06591 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2F93F0D42E3219B100D06591 /* LaunchScreen.storyboard */; };
 		2F93F0E42E3219B100D06591 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2F93F0D72E3219B100D06591 /* Main.storyboard */; };
 		2F93F0EA2E3221C700D06591 /* Constants.m in Sources */ = {isa = PBXBuildFile; fileRef = 2F93F0E62E3221C700D06591 /* Constants.m */; };
+		7C5B9A5B2F12345600AAA001 /* FakeProductView.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C5B9A5A2F12345600AAA001 /* FakeProductView.m */; };
 		EF9C04434008374C67D7E150 /* Pods_SimpleAppObjectiveC.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AF4D513A447AFF8440D7731C /* Pods_SimpleAppObjectiveC.framework */; };
 /* End PBXBuildFile section */
 
@@ -33,6 +34,8 @@
 		2F93F0DB2E3219B100D06591 /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
 		2F93F0E52E3221C700D06591 /* Constants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Constants.h; sourceTree = "<group>"; };
 		2F93F0E62E3221C700D06591 /* Constants.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Constants.m; sourceTree = "<group>"; };
+		7C5B9A592F12345600AAA001 /* FakeProductView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FakeProductView.h; sourceTree = "<group>"; };
+		7C5B9A5A2F12345600AAA001 /* FakeProductView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FakeProductView.m; sourceTree = "<group>"; };
 		6BE7289C0084558E124A245B /* Pods-SimpleAppObjectiveC.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SimpleAppObjectiveC.release.xcconfig"; path = "Target Support Files/Pods-SimpleAppObjectiveC/Pods-SimpleAppObjectiveC.release.xcconfig"; sourceTree = "<group>"; };
 		7BF5BCA09B27C477911DB93B /* Pods-SimpleAppObjectiveC.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SimpleAppObjectiveC.debug.xcconfig"; path = "Target Support Files/Pods-SimpleAppObjectiveC/Pods-SimpleAppObjectiveC.debug.xcconfig"; sourceTree = "<group>"; };
 		AF4D513A447AFF8440D7731C /* Pods_SimpleAppObjectiveC.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_SimpleAppObjectiveC.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -84,6 +87,8 @@
 				2F93F0D92E3219B100D06591 /* SceneDelegate.m */,
 				2F93F0DA2E3219B100D06591 /* ViewController.h */,
 				2F93F0DB2E3219B100D06591 /* ViewController.m */,
+				7C5B9A592F12345600AAA001 /* FakeProductView.h */,
+				7C5B9A5A2F12345600AAA001 /* FakeProductView.m */,
 			);
 			path = SimpleAppObjectiveC;
 			sourceTree = "<group>";
@@ -224,6 +229,7 @@
 				2F93F0DE2E3219B100D06591 /* main.m in Sources */,
 				2F93F0DF2E3219B100D06591 /* SceneDelegate.m in Sources */,
 				2F93F0E02E3219B100D06591 /* ViewController.m in Sources */,
+				7C5B9A5B2F12345600AAA001 /* FakeProductView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
