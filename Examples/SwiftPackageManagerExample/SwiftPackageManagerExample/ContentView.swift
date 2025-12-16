@@ -170,6 +170,10 @@ struct ContentView: View {
                     ProductRow(package: package) {
                         await purchasePackage(package)
                     }
+                    // 상품 카드가 화면에 나타날 때 뷰 이벤트 로깅
+                    .task {
+                        await logViewProductItem(for: package)
+                    }
                 }
             }
         }
@@ -694,6 +698,36 @@ struct ContentView: View {
         } catch {
             print("Failed to load customer info: \(error)")
         }
+    }
+    
+    // MARK: - Product View Logging
+    private func logViewProductItem(for package: Package) async {
+        // 가격 정보 추출 (Decimal -> Double)
+        let price = NSDecimalNumber(decimal: package.storeProduct.price).doubleValue
+        let regularPrice = NSDecimalNumber(decimal: package.storeProduct.price).doubleValue * 2
+        let currencyCode = package.storeProduct.currencyCode ?? "USD"
+        // Convert subscription period to month count (nullable)
+        let month: Int? = {
+            guard let period = package.storeProduct.subscriptionPeriod else { return nil }
+            switch period.unit {
+            case .month:
+                return period.value
+            case .year:
+                return period.value * 12
+            default:
+                return nil
+            }
+        }()
+        
+        let params = ViewProductItemParams(
+            productId: package.storeProduct.productIdentifier,
+            price: price,
+            regularPrice: regularPrice,
+            currencyCode: currencyCode,
+            month: month
+        )
+        
+        await monetaiSDK.logViewProductItem(params)
     }
     
     private func purchasePackage(_ package: Package) async {

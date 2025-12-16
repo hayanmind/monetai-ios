@@ -18,6 +18,22 @@ class ViewController: UIViewController {
     private let discountStatusLabel = UILabel()
     private let resultLabel = UILabel()
     private var discountBannerView: DiscountBannerView?
+    
+    // Fake product meta (single source of truth for view + logging)
+    private let fakeProduct = FakeProductInfo(
+        productId: "fake_product_monthly",
+        price: 9.99,
+        regularPrice: 14.99,
+        currencyCode: "USD",
+        month: 1,
+        title: "Fake Monthly Plan",
+        regularPriceText: "$14.99",
+        discountPriceText: "$9.99 / month",
+        description: "Demo-only fake product to showcase logViewProductItem."
+    )
+    
+    // Fake product UI
+    private let fakeProductView = FakeProductView()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -95,6 +111,8 @@ class ViewController: UIViewController {
         resultLabel.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(resultLabel)
         
+        setupFakeProductView()
+        
         setupConstraints()
     }
     
@@ -130,8 +148,31 @@ class ViewController: UIViewController {
             resultLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             resultLabel.topAnchor.constraint(equalTo: discountStatusLabel.bottomAnchor, constant: 20),
             resultLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            resultLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20)
+            resultLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            
+            // Fake product view
+            fakeProductView.topAnchor.constraint(equalTo: resultLabel.bottomAnchor, constant: 30),
+            fakeProductView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            fakeProductView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            fakeProductView.bottomAnchor.constraint(lessThanOrEqualTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20)
         ])
+    }
+    
+    // MARK: - Fake Product UI
+    private func setupFakeProductView() {
+        fakeProductView.translatesAutoresizingMaskIntoConstraints = false
+        fakeProductView.configure(
+            title: fakeProduct.title,
+            regularPrice: fakeProduct.regularPriceText,
+            discountPrice: fakeProduct.discountPriceText,
+            description: fakeProduct.description
+        )
+        fakeProductView.onAppear = { [weak self] in
+            Task {
+                await self?.logFakeProductView()
+            }
+        }
+        view.addSubview(fakeProductView)
     }
     
     // MARK: - MonetaiSDK Setup
@@ -331,6 +372,18 @@ class ViewController: UIViewController {
             print("Event logged: button_click")
         }
     }
+    
+    // MARK: - Fake Product Logging
+    private func logFakeProductView() async {
+        let params = ViewProductItemParams(
+            productId: fakeProduct.productId,
+            price: fakeProduct.price,
+            regularPrice: fakeProduct.regularPrice,
+            currencyCode: fakeProduct.currencyCode,
+            month: fakeProduct.month as NSNumber?
+        )
+        await MonetaiSDK.shared.logViewProductItem(params)
+    }
 
 	private func presentAlert(title: String, message: String) {
 		let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
@@ -358,5 +411,18 @@ class ViewController: UIViewController {
 		}
 		return nil
 	}
+}
+
+// MARK: - Fake Product Info Model
+private struct FakeProductInfo {
+    let productId: String
+    let price: Double
+    let regularPrice: Double
+    let currencyCode: String
+    let month: Int?
+    let title: String
+    let regularPriceText: String
+    let discountPriceText: String
+    let description: String
 }
 
