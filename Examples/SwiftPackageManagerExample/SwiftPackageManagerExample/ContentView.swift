@@ -39,7 +39,10 @@ struct ContentView: View {
     private var displayedPackages: [Package] {
         guard let basePackage = basePackage else { return [] }
         guard offer != nil else { return [basePackage] }
-        let offerPackages = packages.filter { offerSkuSet.contains($0.storeProduct.productIdentifier) }
+        let offerPackages = packages.filter {
+            offerSkuSet.contains($0.storeProduct.productIdentifier) &&
+            $0.storeProduct.productIdentifier != defaultProductId
+        }
         return [basePackage] + offerPackages
     }
 
@@ -409,8 +412,8 @@ struct ContentView: View {
         } catch {
             await MainActor.run {
                 isLoading = false
+                initializationError = "Get offer failed: \(error.localizedDescription)"
             }
-            print("Failed to get offer: \(error)")
         }
     }
 }

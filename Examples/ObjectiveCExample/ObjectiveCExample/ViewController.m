@@ -321,6 +321,8 @@
 
 - (void)sdkInitialized {
     dispatch_async(dispatch_get_main_queue(), ^{
+        [self.statusCheckTimer invalidate];
+        self.statusCheckTimer = nil;
         self.isInitialized = YES;
         [self updateSDKStatus];
         [self loadProducts];
@@ -352,10 +354,17 @@
 }
 
 - (void)checkSDKStatus {
+    if (self.isInitialized) {
+        [self.statusCheckTimer invalidate];
+        self.statusCheckTimer = nil;
+        return;
+    }
     BOOL initialized = [[MonetaiSDK shared] getInitialized];
-    if (initialized && !self.isInitialized) {
+    if (initialized) {
         self.isInitialized = YES;
         [self updateSDKStatus];
+        [self loadProducts];
+        [self loadCustomerInfo];
         [self.statusCheckTimer invalidate];
         self.statusCheckTimer = nil;
     }
@@ -471,13 +480,19 @@
         }
         if (!pkg) continue;
 
+        NSNumber *month = nil;
+        if (pkg.storeProduct.subscriptionPeriod != nil &&
+            pkg.storeProduct.subscriptionPeriod.unit == RCSubscriptionPeriodUnitYear) {
+            month = @12;
+        }
+
         ViewProductItemParams *params = [[ViewProductItemParams alloc]
             initWithProductId:pkg.storeProduct.productIdentifier
                         price:pkg.storeProduct.price.doubleValue
                  regularPrice:basePackage.storeProduct.price.doubleValue
                  currencyCode:pkg.storeProduct.currencyCode ?: @"USD"
                   promotionId:kPromotionId
-                        month:nil];
+                        month:month];
 
         [[MonetaiSDK shared] logViewProductItemWithParams:params];
     }
@@ -787,7 +802,8 @@
     NSSet<NSString *> *skus = [self offerSkuSet];
     NSMutableArray *result = [NSMutableArray arrayWithObject:base];
     for (RCPackage *p in self.packages) {
-        if ([skus containsObject:p.storeProduct.productIdentifier]) {
+        if ([skus containsObject:p.storeProduct.productIdentifier] &&
+            ![p.storeProduct.productIdentifier isEqualToString:kDefaultProductId]) {
             [result addObject:p];
         }
     }

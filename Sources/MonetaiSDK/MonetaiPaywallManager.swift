@@ -130,7 +130,9 @@ import UIKit
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             if let paywallVC = self.currentPaywallViewController {
-                paywallVC.dismiss(animated: true)
+                paywallVC.dismiss(animated: true) { [weak self] in
+                    self?.currentPaywallViewController = nil
+                }
                 return
             }
             if let presentingVC = self.findTopViewController(),

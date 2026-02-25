@@ -5,11 +5,13 @@ import Foundation
     @objc public let name: String
     @objc public let sku: String
     @objc public let discountRate: Double
+    @objc public let isManual: Bool
 
-    public init(name: String, sku: String, discountRate: Double) {
+    public init(name: String, sku: String, discountRate: Double, isManual: Bool) {
         self.name = name
         self.sku = sku
         self.discountRate = discountRate
+        self.isManual = isManual
         super.init()
     }
 }

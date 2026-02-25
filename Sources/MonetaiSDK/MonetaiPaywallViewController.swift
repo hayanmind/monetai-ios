@@ -1,20 +1,6 @@
 import UIKit
 import WebKit
 
-/// Weak wrapper to break the WKUserContentController → handler strong reference cycle
-private class WeakScriptMessageHandler: NSObject, WKScriptMessageHandler {
-    weak var delegate: WKScriptMessageHandler?
-
-    init(delegate: WKScriptMessageHandler) {
-        self.delegate = delegate
-        super.init()
-    }
-
-    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-        delegate?.userContentController(userContentController, didReceive: message)
-    }
-}
-
 /// PaywallViewController displays the paywall using WebView
 @objc public class MonetaiPaywallViewController: UIViewController {
     
@@ -28,6 +14,7 @@ private class WeakScriptMessageHandler: NSObject, WKScriptMessageHandler {
     private var webView: WKWebView!
     private var loadingIndicator: UIActivityIndicatorView!
     private var dimBackgroundView: UIView!
+    private var errorView: UIView?
     
     // MARK: - Constants
     private var paywallBaseURL: String { MonetaiSDKConstants.webBaseURL + "/paywall" }
@@ -192,39 +179,44 @@ private class WeakScriptMessageHandler: NSObject, WKScriptMessageHandler {
     // MARK: - Paywall Loading
     
     private func loadPaywall() {
-        let url = buildPaywallURL()
+        guard let url = buildPaywallURL() else {
+            showError()
+            return
+        }
         let request = URLRequest(url: url)
-        
+
         loadingIndicator.startAnimating()
         print("[MonetaiSDK] Loading paywall started")
         webView.load(request)
     }
-    
-    private func buildPaywallURL() -> URL {
-        var components = URLComponents(string: "\(paywallBaseURL)/\(paywallParams.style.stringValue)")!
-        
+
+    private func buildPaywallURL() -> URL? {
+        guard var components = URLComponents(string: "\(paywallBaseURL)/\(paywallParams.style.stringValue)") else {
+            return nil
+        }
+
         var queryItems: [URLQueryItem] = []
-        
+
         if !paywallParams.discountPercent.isEmpty {
             queryItems.append(URLQueryItem(name: "discount", value: paywallParams.discountPercent))
         }
-        
+
         if !paywallParams.endedAt.isEmpty {
             queryItems.append(URLQueryItem(name: "endedAt", value: paywallParams.endedAt))
         }
-        
+
         if !paywallParams.regularPrice.isEmpty {
             queryItems.append(URLQueryItem(name: "regularPrice", value: paywallParams.regularPrice))
         }
-        
+
         if !paywallParams.discountedPrice.isEmpty {
             queryItems.append(URLQueryItem(name: "discountedPrice", value: paywallParams.discountedPrice))
         }
-        
+
         if !paywallParams.locale.isEmpty {
             queryItems.append(URLQueryItem(name: "locale", value: paywallParams.locale))
         }
-        
+
         if !paywallParams.features.isEmpty {
             let featuresData = try? JSONSerialization.data(withJSONObject: paywallParams.features.map { feature in
                 [
@@ -238,11 +230,10 @@ private class WeakScriptMessageHandler: NSObject, WKScriptMessageHandler {
                 queryItems.append(URLQueryItem(name: "features", value: featuresString))
             }
         }
-        
+
         components.queryItems = queryItems
-        
-        let built = components.url!
-        return built
+
+        return components.url
     }
     
     // MARK: - Actions
@@ -256,7 +247,10 @@ private class WeakScriptMessageHandler: NSObject, WKScriptMessageHandler {
     // MARK: - Error Handling
     
     private func showError() {
+        guard errorView == nil else { return }
+
         let errorView = UIView()
+        self.errorView = errorView
         errorView.backgroundColor = UIColor.systemBackground
         errorView.layer.cornerRadius = 12
         errorView.translatesAutoresizingMaskIntoConstraints = false

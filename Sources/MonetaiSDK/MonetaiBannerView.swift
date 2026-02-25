@@ -1,20 +1,6 @@
 import UIKit
 import WebKit
 
-/// Weak wrapper to break the WKUserContentController → handler strong reference cycle
-private class WeakScriptMessageHandler: NSObject, WKScriptMessageHandler {
-    weak var delegate: WKScriptMessageHandler?
-
-    init(delegate: WKScriptMessageHandler) {
-        self.delegate = delegate
-        super.init()
-    }
-
-    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-        delegate?.userContentController(userContentController, didReceive: message)
-    }
-}
-
 /// Banner displays discount information via WKWebView and sends CLICK_BANNER on tap
 @objc public class MonetaiBannerView: UIView, WKScriptMessageHandler, WKNavigationDelegate {
     private var onPaywall: (() -> Void)?
@@ -54,8 +40,6 @@ private class WeakScriptMessageHandler: NSObject, WKScriptMessageHandler {
         case .keyFeatureSummary:
             cornerRadius = 16
         case .highlightBenefits:
-            cornerRadius = 12
-        default:
             cornerRadius = 12
         }
         

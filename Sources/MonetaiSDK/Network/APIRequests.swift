@@ -145,7 +145,8 @@ struct APIRequests {
             return offer
         } catch MonetaiError.networkError(let error) {
             // Empty response (201 with no body) means no offer available
-            if case DecodingError.dataCorrupted = error {
+            if case DecodingError.dataCorrupted(let context) = error,
+               context.debugDescription == "Empty response data" {
                 return nil
             }
             throw MonetaiError.networkError(error)

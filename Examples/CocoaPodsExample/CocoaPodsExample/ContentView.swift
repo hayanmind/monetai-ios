@@ -39,7 +39,10 @@ struct ContentView: View {
     private var displayedPackages: [Package] {
         guard let basePackage = basePackage else { return [] }
         guard offer != nil else { return [basePackage] }
-        let offerPackages = packages.filter { offerSkuSet.contains($0.storeProduct.productIdentifier) }
+        let offerPackages = packages.filter {
+            offerSkuSet.contains($0.storeProduct.productIdentifier) &&
+            $0.storeProduct.productIdentifier != defaultProductId
+        }
         return [basePackage] + offerPackages
     }
 
@@ -165,15 +168,15 @@ struct ContentView: View {
 
             // Subscriber status
             HStack {
-                Text("구독자 상태:")
+                Text("Subscriber Status:")
                     .font(.subheadline)
                     .fontWeight(.medium)
                 if let customerInfo = customerInfo, !customerInfo.entitlements.active.isEmpty {
-                    Text("구독자")
+                    Text("Subscribed")
                         .font(.subheadline)
                         .fontWeight(.medium)
                 } else {
-                    Text("비구독자")
+                    Text("Not Subscribed")
                         .font(.subheadline)
                         .fontWeight(.medium)
                 }
@@ -409,8 +412,8 @@ struct ContentView: View {
         } catch {
             await MainActor.run {
                 isLoading = false
+                initializationError = "Get offer failed: \(error.localizedDescription)"
             }
-            print("Failed to get offer: \(error)")
         }
     }
 }

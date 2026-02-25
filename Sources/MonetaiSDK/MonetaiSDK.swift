@@ -59,6 +59,7 @@ private enum PendingEvent {
 
     private var sdkKey: String?
     private var userId: String?
+    private var organizationId: Int = 0
     private var pendingEvents: [PendingEvent] = []
 
     /// Server-client time offset in milliseconds (serverTimestamp - clientTimestamp)
@@ -103,7 +104,7 @@ private enum PendingEvent {
         // If already initialized
         if isInitialized {
             return InitializeResult(
-                organizationId: 0,
+                organizationId: organizationId,
                 platform: "ios",
                 version: SDKVersion.getVersion(),
                 userId: userId
@@ -135,7 +136,8 @@ private enum PendingEvent {
         // API initialization
         let initResponse = try await APIRequests.initialize(sdkKey: sdkKey)
 
-        // Calculate server-client time offset
+        // Store organization ID and calculate server-client time offset
+        self.organizationId = initResponse.organizationId
         let clientTimestamp = Int64(Date().timeIntervalSince1970 * 1000)
         self.serverTimeOffset = initResponse.serverTimestamp - clientTimestamp
 
@@ -234,6 +236,7 @@ private enum PendingEvent {
     @objc public func reset() {
         sdkKey = nil
         userId = nil
+        organizationId = 0
         isInitialized = false
         pendingEvents.removeAll()
         serverTimeOffset = 0

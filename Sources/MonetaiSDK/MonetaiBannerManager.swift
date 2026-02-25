@@ -54,14 +54,14 @@ import UIKit
                 bannerHeight = 45
             case .compact:
                 bannerHeight = 68
-            default:
+            case .keyFeatureSummary, .highlightBenefits:
                 bannerHeight = 56
             }
 
             NSLayoutConstraint.activate([
                 banner.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 16),
                 banner.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -16),
-                banner.bottomAnchor.constraint(equalTo: containerView.safeAreaLayoutGuide.bottomAnchor, constant: -CGFloat(bannerParams.bottom)),
+                banner.bottomAnchor.constraint(equalTo: containerView.safeAreaLayoutGuide.bottomAnchor, constant: -bannerParams.bottom),
                 banner.heightAnchor.constraint(equalToConstant: bannerHeight)
             ])
 
@@ -86,7 +86,9 @@ import UIKit
     /// Hide banner
     @objc public func hideBanner() {
         DispatchQueue.main.async {
+            self.bannerVisible = false
             if let banner = self.bannerView {
+                self.bannerView = nil
                 UIView.animate(withDuration: 0.2, animations: {
                     banner.alpha = 0
                     banner.transform = CGAffineTransform(translationX: 0, y: 20)
@@ -94,8 +96,6 @@ import UIKit
                     banner.removeFromSuperview()
                 })
             }
-            self.bannerView = nil
-            self.bannerVisible = false
         }
     }
 
