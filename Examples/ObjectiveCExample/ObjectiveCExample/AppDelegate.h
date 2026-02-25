@@ -1,6 +1,6 @@
 //
 //  AppDelegate.h
-//  SimpleAppObjectiveC
+//  ObjectiveCExample
 //
 //  Created by Daehoon Kim on 7/24/25.
 //

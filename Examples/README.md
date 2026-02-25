@@ -40,7 +40,7 @@ This directory contains example projects demonstrating how to integrate Monetai 
 
 ### 📱 Objective-C Example
 
-**Location**: `SimpleAppObjectiveC/`
+**Location**: `ObjectiveCExample/`
 
 - Objective-C implementation of core SDK features
 - UIKit-based interface with CocoaPods
@@ -48,7 +48,7 @@ This directory contains example projects demonstrating how to integrate Monetai 
 - Perfect for Objective-C codebases
 - Demonstrates SDK integration in Objective-C
 
-[📖 View Objective-C Example →](SimpleAppObjectiveC/)
+[📖 View Objective-C Example →](ObjectiveCExample/)
 
 ## Quick Start
 
