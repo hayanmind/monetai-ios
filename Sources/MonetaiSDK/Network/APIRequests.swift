@@ -135,22 +135,13 @@ struct APIRequests {
             "platform": "ios"
         ]
 
-        do {
-            let offer: Offer = try await APIClient.shared.request(
-                endpoint: "/offers/get-offer",
-                method: .post,
-                parameters: parameters,
-                encoding: JSONEncoding.default
-            )
-            return offer
-        } catch MonetaiError.networkError(let error) {
-            // Empty response (201 with no body) means no offer available
-            if case DecodingError.dataCorrupted(let context) = error,
-               context.debugDescription == "Empty response data" {
-                return nil
-            }
-            throw MonetaiError.networkError(error)
-        }
+        let offer: Offer? = try await APIClient.shared.request(
+            endpoint: "/offers/get-offer",
+            method: .post,
+            parameters: parameters,
+            encoding: JSONEncoding.default
+        )
+        return offer
     }
 
     // MARK: - Transaction ID Mapping

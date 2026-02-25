@@ -102,14 +102,8 @@ final class APIClient: @unchecked Sendable {
                             if T.self == EmptyResponse.self {
                                 continuation.resume(returning: EmptyResponse() as! T)
                                 return
-                            } else {
-                                let error = DecodingError.dataCorrupted(
-                                    DecodingError.Context(
-                                        codingPath: [],
-                                        debugDescription: "Empty response data"
-                                    )
-                                )
-                                continuation.resume(throwing: MonetaiError.networkError(error))
+                            } else if let nilValue = Optional<Any>.none as? T {
+                                continuation.resume(returning: nilValue)
                                 return
                             }
                         }
