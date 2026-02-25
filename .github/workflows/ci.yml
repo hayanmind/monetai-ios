@@ -11,10 +11,10 @@ jobs:
   # Build and test for iOS
   build-ios:
     name: Build iOS
-    runs-on: macos-15
+    runs-on: macos-14
     strategy:
       matrix:
-        xcode: ["16.0"]
+        xcode: ["15.4"]
 
     steps:
       - name: Checkout code
@@ -25,22 +25,18 @@ jobs:
         with:
           xcode-version: ${{ matrix.xcode }}
 
-      - name: Install iOS Simulator Runtime
-        run: |
-          xcodebuild -downloadPlatform iOS
-
       - name: Build Package
         run: |
           xcodebuild \
             -scheme MonetaiSDK \
-            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            -destination 'platform=iOS Simulator,name=iPhone 15' \
             -sdk iphonesimulator \
             build
 
   # CocoaPods validation
   cocoapods:
     name: CocoaPods Validation
-    runs-on: macos-15
+    runs-on: macos-14
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

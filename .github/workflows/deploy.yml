@@ -40,7 +40,7 @@ jobs:
   # Step 2: Deploy to CocoaPods
   deploy-cocoapods:
     name: Deploy to CocoaPods
-    runs-on: macos-15
+    runs-on: macos-14
     needs: deploy
     steps:
       - name: Checkout code
