@@ -1,6 +1,20 @@
 import UIKit
 import WebKit
 
+/// Weak wrapper to break the WKUserContentController → handler strong reference cycle
+private class WeakScriptMessageHandler: NSObject, WKScriptMessageHandler {
+    weak var delegate: WKScriptMessageHandler?
+
+    init(delegate: WKScriptMessageHandler) {
+        self.delegate = delegate
+        super.init()
+    }
+
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        delegate?.userContentController(userContentController, didReceive: message)
+    }
+}
+
 /// Banner displays discount information via WKWebView and sends CLICK_BANNER on tap
 @objc public class MonetaiBannerView: UIView, WKScriptMessageHandler, WKNavigationDelegate {
     private var onPaywall: (() -> Void)?
@@ -20,6 +34,10 @@ import WebKit
     @objc public required init?(coder: NSCoder) {
         super.init(coder: coder)
         setupWebView()
+    }
+
+    deinit {
+        webView?.configuration.userContentController.removeScriptMessageHandler(forName: "monetai")
     }
 
     @objc public func configure(bannerParams: BannerParams, onPaywall: @escaping () -> Void) {
@@ -69,8 +87,8 @@ import WebKit
 
         let config = WKWebViewConfiguration()
         let contentController = WKUserContentController()
-        // Use native 'monetai' channel for messaging
-        contentController.add(self, name: "monetai")
+        // Use native 'monetai' channel for messaging (weak wrapper to avoid retain cycle)
+        contentController.add(WeakScriptMessageHandler(delegate: self), name: "monetai")
         config.userContentController = contentController
 
         webView = WKWebView(frame: .zero, configuration: config)

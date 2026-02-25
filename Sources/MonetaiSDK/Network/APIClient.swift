@@ -1,22 +1,47 @@
 import Foundation
 import Alamofire
 
+/// Thread-safe header adapter that automatically injects SDK headers into every request
+private class SDKHeaderAdapter: RequestInterceptor {
+    private let lock = NSLock()
+    private var headers: [String: String] = [
+        SDKHeaders.sdkPlatform: "ios",
+        SDKHeaders.sdkVersion: SDKVersion.getVersion(),
+        SDKHeaders.deviceOS: "ios"
+    ]
+
+    func setHeader(_ key: String, value: String) {
+        lock.lock()
+        defer { lock.unlock() }
+        headers[key] = value
+    }
+
+    func adapt(_ urlRequest: URLRequest, for session: Session, completion: @escaping (Result<URLRequest, any Error>) -> Void) {
+        var request = urlRequest
+        lock.lock()
+        let snapshot = headers
+        lock.unlock()
+        for (key, value) in snapshot {
+            request.setValue(value, forHTTPHeaderField: key)
+        }
+        completion(.success(request))
+    }
+}
+
 /// API client class
-final class APIClient: Sendable {
+final class APIClient {
     static let shared = APIClient()
 
     private let baseURL = "https://monetai-api-414410537412.us-central1.run.app/sdk"
     private let session: Session
     private let decoder: JSONDecoder
-
-    // Mutable default headers managed via Alamofire Session
-    nonisolated(unsafe) private var additionalHeaders: [String: String] = [:]
+    private let headerAdapter = SDKHeaderAdapter()
 
     private init() {
         let configuration = URLSessionConfiguration.default
         configuration.timeoutIntervalForRequest = 30
         configuration.timeoutIntervalForResource = 60
-        self.session = Session(configuration: configuration)
+        self.session = Session(configuration: configuration, interceptor: headerAdapter)
 
         // JSONDecoder configuration
         self.decoder = JSONDecoder()
@@ -35,26 +60,21 @@ final class APIClient: Sendable {
 
             throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid date format: \(dateString)")
         }
-
-        // Set static headers
-        additionalHeaders[SDKHeaders.sdkPlatform] = "ios"
-        additionalHeaders[SDKHeaders.sdkVersion] = SDKVersion.getVersion()
-        additionalHeaders[SDKHeaders.deviceOS] = "ios"
     }
 
     /// Set App Version header (called during initialization)
     func setAppVersionHeader(_ version: String) {
-        additionalHeaders[SDKHeaders.appVersion] = version
+        headerAdapter.setHeader(SDKHeaders.appVersion, value: version)
     }
 
     /// Set Bundle ID header (called during initialization)
     func setBundleIdHeader(_ bundleId: String) {
-        additionalHeaders[SDKHeaders.bundleId] = bundleId
+        headerAdapter.setHeader(SDKHeaders.bundleId, value: bundleId)
     }
 
     /// Set User ID header (called during initialization)
     func setUserIdHeader(_ userId: String) {
-        additionalHeaders[SDKHeaders.userId] = userId
+        headerAdapter.setHeader(SDKHeaders.userId, value: userId)
     }
 
     /// Generic method to perform API requests
@@ -66,14 +86,8 @@ final class APIClient: Sendable {
     ) async throws -> T {
         let url = baseURL + endpoint
 
-        // Build HTTP headers
-        var httpHeaders = HTTPHeaders()
-        for (key, value) in additionalHeaders {
-            httpHeaders.add(name: key, value: value)
-        }
-
         return try await withCheckedThrowingContinuation { continuation in
-            session.request(url, method: method, parameters: parameters, encoding: encoding, headers: httpHeaders)
+            session.request(url, method: method, parameters: parameters, encoding: encoding)
                 .validate()
                 .response { response in
                     switch response.result {
@@ -82,7 +96,6 @@ final class APIClient: Sendable {
                         let responseData = data ?? Data()
 
                         let isEmptyResponse = responseData.isEmpty ||
-                                            responseData.count == 0 ||
                                             String(data: responseData, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == true
 
                         if isEmptyResponse {

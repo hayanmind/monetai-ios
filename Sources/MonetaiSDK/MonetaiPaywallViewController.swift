@@ -1,6 +1,20 @@
 import UIKit
 import WebKit
 
+/// Weak wrapper to break the WKUserContentController → handler strong reference cycle
+private class WeakScriptMessageHandler: NSObject, WKScriptMessageHandler {
+    weak var delegate: WKScriptMessageHandler?
+
+    init(delegate: WKScriptMessageHandler) {
+        self.delegate = delegate
+        super.init()
+    }
+
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        delegate?.userContentController(userContentController, didReceive: message)
+    }
+}
+
 /// PaywallViewController displays the paywall using WebView
 @objc public class MonetaiPaywallViewController: UIViewController {
     
@@ -89,10 +103,9 @@ import WebKit
         // Setup WebView
         let webViewConfiguration = WKWebViewConfiguration()
         webViewConfiguration.allowsInlineMediaPlayback = true
-        // Use native 'monetai' channel for messaging
+        // Use native 'monetai' channel for messaging (weak wrapper to avoid retain cycle)
         let contentController = WKUserContentController()
-        contentController.add(self, name: "monetai")
-        print("[MonetaiSDK] Paywall WebView: registered message handler 'monetai'")
+        contentController.add(WeakScriptMessageHandler(delegate: self), name: "monetai")
         webViewConfiguration.userContentController = contentController
         
         webView = WKWebView(frame: .zero, configuration: webViewConfiguration)
