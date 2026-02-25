@@ -143,7 +143,6 @@ public enum MonetaiError: Error, LocalizedError {
     case invalidUserId
     case apiError(String)
     case networkError(Error)
-    case storeKitError(Error)
 
     public var errorDescription: String? {
         switch self {
@@ -157,8 +156,6 @@ public enum MonetaiError: Error, LocalizedError {
             return "API error: \(message)"
         case .networkError(let error):
             return "Network error: \(error.localizedDescription)"
-        case .storeKitError(let error):
-            return "StoreKit error: \(error.localizedDescription)"
         }
     }
 }

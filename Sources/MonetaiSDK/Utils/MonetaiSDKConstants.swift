@@ -8,8 +8,3 @@ public enum MonetaiSDKConstants {
     /// User-Agent for SDK webviews
     public static var webViewUserAgent: String = "MonetaiSDK"
 }
-
-@available(*, deprecated, renamed: "MonetaiSDKConstants")
-public typealias SDKConstants = MonetaiSDKConstants
-
-

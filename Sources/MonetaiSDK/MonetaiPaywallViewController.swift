@@ -13,7 +13,6 @@ import WebKit
     
     private var webView: WKWebView!
     private var loadingIndicator: UIActivityIndicatorView!
-    private var errorView: UIView?
     private var dimBackgroundView: UIView!
     
     // MARK: - Constants
@@ -73,7 +72,7 @@ import WebKit
     
     deinit {
         // Remove message handler to avoid retain cycles
-        webView?.configuration.userContentController.removeScriptMessageHandler(forName: "ReactNativeWebView")
+        webView?.configuration.userContentController.removeScriptMessageHandler(forName: "monetai")
     }
     
     // MARK: - UI Setup
@@ -284,7 +283,6 @@ import WebKit
             closeButton.heightAnchor.constraint(equalToConstant: 40)
         ])
         
-        self.errorView = errorView
     }
 }
 
