@@ -14,7 +14,7 @@ jobs:
     runs-on: macos-14
     strategy:
       matrix:
-        xcode: ["16.0"]
+        xcode: ["16.2"]
 
     steps:
       - name: Checkout code
