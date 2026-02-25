@@ -1,16 +1,15 @@
 # Monetai iOS SDK - Swift Package Manager Example
 
-This example demonstrates how to integrate Monetai iOS SDK using Swift Package Manager (SPM).
+This example demonstrates how to integrate Monetai iOS SDK using Swift Package Manager (SPM) with dynamic pricing via `getOffer`.
 
 ## Features Demonstrated
 
-- ✅ SDK initialization using Swift Package Manager
-- ✅ Event logging with parameters
-- ✅ User prediction and A/B testing
-- ✅ Discount management
-- ✅ Real-time discount status updates
-- ✅ SwiftUI integration
-- ✅ RevenueCat integration for subscription management
+- SDK initialization using Swift Package Manager
+- Dynamic pricing with `getOffer` API
+- Event logging with parameters
+- RevenueCat integration for subscription management
+- Product display with discount pricing
+- SwiftUI integration
 
 ## Prerequisites
 
@@ -39,16 +38,16 @@ The project uses Swift Package Manager for dependency management. Dependencies a
 ## Configuration
 
 1. Open `Constants.swift`
-2. Update the SDK key and user ID with your own values:
+2. Update with your own values:
 
    ```swift
    struct Constants {
-       // MARK: - MonetaiSDK Configuration
        static let sdkKey = "your-sdk-key-here"
        static let userId = "example-user-id"
        static let useStoreKit2 = true
+       static let promotionId = 6
+       static let defaultProductId = "com.monetai.example.premium.annual"
 
-       // MARK: - RevenueCat Configuration
        static let revenueCatAPIKey = "your-revenuecat-api-key-here"
    }
    ```
@@ -59,28 +58,9 @@ The project uses Swift Package Manager for dependency management. Dependencies a
 2. Press `Cmd + R` to build and run the app
 3. The app will automatically initialize the Monetai SDK and display the status
 4. Try different features:
-   - Tap buttons to log events
-   - Use "Predict User Behavior" to get AI predictions
-   - Check discount status and availability
+   - Tap "Get Offer" to fetch dynamic pricing offers
+   - View discount rates applied to products
    - Test RevenueCat subscription flows
-
-## Integration Method
-
-This example uses Swift Package Manager to integrate Monetai SDK:
-
-### Package Dependencies
-
-The project includes the following dependencies:
-
-- MonetaiSDK
-- RevenueCat (for subscription management)
-
-### Import
-
-```swift
-import MonetaiSDK
-import RevenueCat
-```
 
 ## Key Implementation Details
 
@@ -90,69 +70,36 @@ import RevenueCat
 let result = try await monetaiSDK.initialize(
     sdkKey: sdkKey,
     userId: userId,
-    useStoreKit2: true // Using StoreKit 2 for SPM example
+    useStoreKit2: true
 )
+```
+
+### Get Offer (Dynamic Pricing)
+
+```swift
+let offer = try await monetaiSDK.getOffer(promotionId: promotionId)
+// offer.agentName - the matched agent
+// offer.products  - array of OfferProduct with sku, name, discountRate
 ```
 
 ### Event Logging
 
 ```swift
-// Simple event
-await monetaiSDK.logEvent(eventName: "app_opened")
-
-// Event with parameters
-await monetaiSDK.logEvent(eventName: "product_viewed", params: [
-    "product_id": "premium_subscription"
+await monetaiSDK.logEvent(eventName: "app_launched", params: [
+    "version": "1.0.0"
 ])
-
-// Using LogEventOptions
-let options = LogEventOptions.event("spm_example_custom", params: [
-    "integration_type": "swift_package_manager",
-    "timestamp": Date().timeIntervalSince1970
-])
-await monetaiSDK.logEvent(options)
 ```
 
-### User Prediction
+### Log View Product Item
 
 ```swift
-do {
-    let result = try await monetaiSDK.predict()
-    // Handle prediction result
-} catch {
-    // Handle error
-}
-```
-
-### Discount Management
-
-```swift
-// Check current discount
-let discount = try await monetaiSDK.getCurrentDiscount()
-
-// Check if user has active discount
-let hasActiveDiscount = try await monetaiSDK.hasActiveDiscount()
-
-// Set up discount change listener
-monetaiSDK.onDiscountInfoChange = { discount in
-    // Handle discount changes
-}
-```
-
-### RevenueCat Integration
-
-This example also demonstrates RevenueCat integration for subscription management:
-
-```swift
-// Initialize RevenueCat
-Purchases.configure(withAPIKey: Constants.revenueCatAPIKey)
-
-// Get available packages
-let offerings = try await Purchases.shared.offerings()
-let packages = offerings.current?.availablePackages ?? []
-
-// Purchase package
-let customerInfo = try await Purchases.shared.purchase(package: package)
+await monetaiSDK.logViewProductItem(ViewProductItemParams(
+    productId: product.sku,
+    price: discountedPrice,
+    regularPrice: regularPrice,
+    currencyCode: "USD",
+    promotionId: promotionId
+))
 ```
 
 ## Troubleshooting
@@ -178,7 +125,6 @@ let customerInfo = try await Purchases.shared.purchase(package: package)
 ### Getting Help
 
 - Check the main [README](../../README.md) for general information
-- Review the [API Reference](../../README.md#api-reference)
 - Open an issue on [GitHub](https://github.com/hayanmind/monetai-ios/issues)
 
 ---
@@ -186,4 +132,3 @@ let customerInfo = try await Purchases.shared.purchase(package: package)
 For more integration options, check out:
 
 - [CocoaPods Example](../CocoaPodsExample/)
-- [Simple App Example](../SimpleApp/)
