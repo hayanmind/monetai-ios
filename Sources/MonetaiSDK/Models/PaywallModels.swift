@@ -173,18 +173,3 @@ public class PaywallConfigOptions: NSObject {
     }
 }
 
-// MARK: - Discount Info
-@objc public class DiscountInfo: NSObject {
-    @objc public let startedAt: Date
-    @objc public let endedAt: Date
-    @objc public let userId: String
-    @objc public let sdkKey: String
-    
-    @objc public init(startedAt: Date, endedAt: Date, userId: String, sdkKey: String) {
-        self.startedAt = startedAt
-        self.endedAt = endedAt
-        self.userId = userId
-        self.sdkKey = sdkKey
-        super.init()
-    }
-}
