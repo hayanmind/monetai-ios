@@ -1,5 +1,5 @@
 import UIKit
-import WebKit
+@preconcurrency import WebKit
 
 /// PaywallViewController displays the paywall using WebView
 @objc public class MonetaiPaywallViewController: UIViewController {
