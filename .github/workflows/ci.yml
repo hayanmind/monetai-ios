@@ -11,10 +11,10 @@ jobs:
   # Build and test for iOS
   build-ios:
     name: Build iOS
-    runs-on: macos-13
+    runs-on: macos-15
     strategy:
       matrix:
-        xcode: ["15.0"]
+        xcode: ["16.0"]
 
     steps:
       - name: Checkout code
@@ -36,7 +36,7 @@ jobs:
   # CocoaPods validation
   cocoapods:
     name: CocoaPods Validation
-    runs-on: macos-13
+    runs-on: macos-15
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
