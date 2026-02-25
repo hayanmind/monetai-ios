@@ -2,7 +2,7 @@ import Foundation
 import Alamofire
 
 /// Thread-safe header adapter that automatically injects SDK headers into every request
-private class SDKHeaderAdapter: RequestInterceptor {
+private final class SDKHeaderAdapter: RequestInterceptor, @unchecked Sendable {
     private let lock = NSLock()
     private var headers: [String: String] = [
         SDKHeaders.sdkPlatform: "ios",
@@ -29,7 +29,7 @@ private class SDKHeaderAdapter: RequestInterceptor {
 }
 
 /// API client class
-final class APIClient {
+final class APIClient: @unchecked Sendable {
     static let shared = APIClient()
 
     private let baseURL = "https://monetai-api-414410537412.us-central1.run.app/sdk"
