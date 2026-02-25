@@ -6,12 +6,10 @@ import UIKit
 @objc public class LogEventOptions: NSObject {
     @objc public let eventName: String
     @objc public let params: [String: Any]?
-    @objc public let createdAt: Date
 
-    @objc public init(eventName: String, params: [String: Any]? = nil, createdAt: Date = Date()) {
+    @objc public init(eventName: String, params: [String: Any]? = nil) {
         self.eventName = eventName
         self.params = params
-        self.createdAt = createdAt
         super.init()
     }
 }

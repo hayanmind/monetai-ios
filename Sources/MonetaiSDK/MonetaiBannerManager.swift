@@ -10,7 +10,6 @@ import UIKit
     @Published public private(set) var bannerParams: BannerParams?
 
     // MARK: - Private Properties
-    private var cancellables = Set<AnyCancellable>()
     private weak var bannerView: MonetaiBannerView?
     private weak var paywallManager: MonetaiPaywallManager?
 

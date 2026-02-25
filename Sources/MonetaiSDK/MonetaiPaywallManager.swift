@@ -11,7 +11,6 @@ import UIKit
 
     // MARK: - Private Properties
     private var paywallConfig: PaywallConfig?
-    private var cancellables = Set<AnyCancellable>()
     private var currentPaywallViewController: MonetaiPaywallViewController?
 
     // MARK: - Public Methods
@@ -188,13 +187,5 @@ import UIKit
             viewController.modalPresentationStyle = .overFullScreen
             viewController.modalTransitionStyle = .crossDissolve
         }
-    }
-}
-
-// MARK: - Date Extension
-private extension Date {
-    func ISO8601String() -> String {
-        let formatter = ISO8601DateFormatter()
-        return formatter.string(from: self)
     }
 }

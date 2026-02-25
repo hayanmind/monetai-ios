@@ -7,7 +7,7 @@ import CoreGraphics
     case highlightBenefits = 1
     case keyFeatureSummary = 2
     case textFocused = 3
-    
+
     public var stringValue: String {
         switch self {
         case .compact:
@@ -27,7 +27,7 @@ import CoreGraphics
     @objc public let title: String
     @objc public let featureDescription: String
     @objc public let isPremiumOnly: Bool
-    
+
     @objc public init(title: String, description: String, isPremiumOnly: Bool = false) {
         self.title = title
         self.featureDescription = description
@@ -38,83 +38,16 @@ import CoreGraphics
 
 // MARK: - Paywall Configuration
 @objc public class PaywallConfig: NSObject {
-    @objc public let discountPercent: Int
-    @objc public let regularPrice: String
-    @objc public let discountedPrice: String
-    @objc public let locale: String
-    @objc public let features: [Feature]
-    @objc public let style: PaywallStyle
-    // Banner related
-    @objc public let enabled: Bool
-    @objc public let bannerBottom: CGFloat
-    
     // Callbacks
     /// Unified purchase callback. SDK provides a close handler to dismiss the paywall when appropriate.
     @objc public var onPurchase: (((@escaping () -> Void) -> Void))?
     @objc public var onTermsOfService: (() -> Void)?
     @objc public var onPrivacyPolicy: (() -> Void)?
-    
-    @objc public init(
-        discountPercent: Int,
-        regularPrice: String,
-        discountedPrice: String,
-        locale: String,
-        style: PaywallStyle,
-        features: [Feature] = [],
-        // Banner defaults align with RN SDK
-        enabled: Bool = true,
-        bannerBottom: CGFloat = 20
-    ) {
-        self.discountPercent = discountPercent
-        self.regularPrice = regularPrice
-        self.discountedPrice = discountedPrice
-        self.locale = locale
-        self.style = style
-        self.features = features
-        self.enabled = enabled
-        self.bannerBottom = bannerBottom
+
+    @objc public override init() {
         super.init()
     }
-    
-    // MARK: - Objective-C Convenience Initializer
-    
-    /// Options-based convenience initializer for Objective-C
-    @objc public convenience init(
-        discountPercent: Int,
-        regularPrice: String,
-        discountedPrice: String,
-        locale: String,
-        style: PaywallStyle,
-        options: PaywallConfigOptions?
-    ) {
-        self.init(
-            discountPercent: discountPercent,
-            regularPrice: regularPrice,
-            discountedPrice: discountedPrice,
-            locale: locale,
-            style: style,
-            features: options?.features ?? [],
-            enabled: options?.enabled?.boolValue ?? true,
-            bannerBottom: options?.bannerBottom.map { CGFloat(truncating: $0) } ?? 20
-        )
-    }
 }
-
-// MARK: - Paywall Configuration Options
-
-/// Options class for flexible PaywallConfig initialization in Objective-C
-@objcMembers
-public class PaywallConfigOptions: NSObject {
-    public var features: [Feature]?
-    public var enabled: NSNumber?
-    public var bannerBottom: NSNumber?   // CGFloat? 대신 NSNumber?로
-    
-    public override init() { 
-        super.init() 
-    }
-}
-
-
 
 // MARK: - Paywall Parameters
 @objc public class PaywallParams: NSObject {
@@ -125,7 +58,7 @@ public class PaywallConfigOptions: NSObject {
     @objc public let locale: String
     @objc public let features: [Feature]
     @objc public let style: PaywallStyle
-    
+
     @objc public init(
         discountPercent: String,
         endedAt: String,
@@ -146,9 +79,8 @@ public class PaywallConfigOptions: NSObject {
     }
 }
 
-// MARK: - Banner Parameters (to mirror RN BannerParams)
+// MARK: - Banner Parameters
 @objc public class BannerParams: NSObject {
-    @objc public let enabled: Bool
     @objc public let locale: String
     @objc public let discountPercent: Int
     @objc public let endedAt: Date
@@ -156,14 +88,12 @@ public class PaywallConfigOptions: NSObject {
     @objc public let bottom: CGFloat
 
     @objc public init(
-        enabled: Bool,
         locale: String,
         discountPercent: Int,
         endedAt: Date,
         style: PaywallStyle,
         bottom: CGFloat = 20
     ) {
-        self.enabled = enabled
         self.locale = locale
         self.discountPercent = discountPercent
         self.endedAt = endedAt
@@ -172,4 +102,3 @@ public class PaywallConfigOptions: NSObject {
         super.init()
     }
 }
-
