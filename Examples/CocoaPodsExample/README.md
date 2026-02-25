@@ -1,20 +1,20 @@
 # Monetai iOS SDK - CocoaPods Example
 
-This example demonstrates how to integrate Monetai iOS SDK using CocoaPods package manager.
+This example demonstrates how to integrate Monetai iOS SDK using CocoaPods with dynamic pricing via `getOffer` and RevenueCat for subscription management.
 
 ## Features Demonstrated
 
-- ✅ SDK initialization using CocoaPods
-- ✅ Event logging with parameters
-- ✅ User prediction and A/B testing
-- ✅ Discount management
-- ✅ Real-time discount status updates
-- ✅ SwiftUI integration
+- SDK initialization using CocoaPods
+- Dynamic pricing with `getOffer` API
+- Event logging with parameters
+- RevenueCat integration for subscription management
+- Product display with discount pricing
+- SwiftUI integration
 
 ## Prerequisites
 
 - Xcode 15.0+
-- iOS 13.0+
+- iOS 16.0+
 - CocoaPods installed on your system
 
 ## Setup
@@ -43,15 +43,23 @@ pod install
 open CocoaPodsExample.xcworkspace
 ```
 
-**⚠️ Important**: Always open the `.xcworkspace` file, not the `.xcodeproj` file when using CocoaPods.
+**Important**: Always open the `.xcworkspace` file, not the `.xcodeproj` file when using CocoaPods.
 
 ## Configuration
 
-1. Open `ContentView.swift`
-2. Update the SDK key and user ID with your own values:
+1. Open `Constants.swift`
+2. Update with your own values:
+
    ```swift
-   private let sdkKey = "your-sdk-key"
-   private let userId = "your-user-id"
+   struct Constants {
+       static let sdkKey = "your-sdk-key-here"
+       static let userId = "example-user-id"
+       static let useStoreKit2 = true
+       static let promotionId = 6
+       static let defaultProductId = "your-default-product-id-here"
+
+       static let revenueCatAPIKey = "your-revenuecat-api-key-here"
+   }
    ```
 
 ## Running the Example
@@ -60,9 +68,9 @@ open CocoaPodsExample.xcworkspace
 2. Press `Cmd + R` to build and run the app
 3. The app will automatically initialize the Monetai SDK and display the status
 4. Try different features:
-   - Tap buttons to log events
-   - Use "Predict User Behavior" to get AI predictions
-   - Check discount status and availability
+   - Tap "Get Offer" to fetch dynamic pricing offers
+   - View discount rates applied to products
+   - Test RevenueCat subscription flows
 
 ## Integration Method
 
@@ -71,11 +79,12 @@ This example uses CocoaPods to integrate Monetai SDK:
 ### Podfile
 
 ```ruby
-platform :ios, '13.0'
+platform :ios, '16.0'
 use_frameworks!
 
 target 'CocoaPodsExample' do
   pod 'MonetaiSDK', :path => '../../'
+  pod 'RevenueCat'
 end
 ```
 
@@ -83,6 +92,7 @@ end
 
 ```swift
 import MonetaiSDK
+import RevenueCat
 ```
 
 ## Key Implementation Details
@@ -93,53 +103,36 @@ import MonetaiSDK
 let result = try await monetaiSDK.initialize(
     sdkKey: sdkKey,
     userId: userId,
-    useStoreKit2: false // Using StoreKit 1 for CocoaPods example
+    useStoreKit2: true
 )
+```
+
+### Get Offer (Dynamic Pricing)
+
+```swift
+let offer = try await monetaiSDK.getOffer(promotionId: promotionId)
+// offer.agentName - the matched agent
+// offer.products  - array of OfferProduct with sku, name, discountRate
 ```
 
 ### Event Logging
 
 ```swift
-// Simple event
-await monetaiSDK.logEvent(eventName: "app_opened")
-
-// Event with parameters
-await monetaiSDK.logEvent(eventName: "product_viewed", params: [
-    "product_id": "premium_subscription"
+await monetaiSDK.logEvent(eventName: "app_launched", params: [
+    "version": "1.0.0"
 ])
-
-// Using LogEventOptions
-let options = LogEventOptions.event("cocoapods_example_custom", params: [
-    "integration_type": "cocoapods",
-    "timestamp": Date().timeIntervalSince1970
-])
-await monetaiSDK.logEvent(options)
 ```
 
-### User Prediction
+### Log View Product Item
 
 ```swift
-do {
-    let result = try await monetaiSDK.predict()
-    // Handle prediction result
-} catch {
-    // Handle error
-}
-```
-
-### Discount Management
-
-```swift
-// Check current discount
-let discount = try await monetaiSDK.getCurrentDiscount()
-
-// Check if user has active discount
-let hasActiveDiscount = try await monetaiSDK.hasActiveDiscount()
-
-// Set up discount change listener
-monetaiSDK.onDiscountInfoChange = { discount in
-    // Handle discount changes
-}
+await monetaiSDK.logViewProductItem(ViewProductItemParams(
+    productId: product.sku,
+    price: discountedPrice,
+    regularPrice: regularPrice,
+    currencyCode: "USD",
+    promotionId: promotionId
+))
 ```
 
 ## Troubleshooting
@@ -154,7 +147,7 @@ monetaiSDK.onDiscountInfoChange = { discount in
 
 2. **Build errors**
 
-   - Check iOS deployment target (should be 13.0+)
+   - Check iOS deployment target (should be 16.0+)
    - Try running `pod update`
 
 3. **SDK initialization fails**
@@ -165,7 +158,6 @@ monetaiSDK.onDiscountInfoChange = { discount in
 ### Getting Help
 
 - Check the main [README](../../README.md) for general information
-- Review the [API Reference](../../README.md#api-reference)
 - Open an issue on [GitHub](https://github.com/hayanmind/monetai-ios/issues)
 
 ---
@@ -173,3 +165,4 @@ monetaiSDK.onDiscountInfoChange = { discount in
 For more integration options, check out:
 
 - [Swift Package Manager Example](../SwiftPackageManagerExample/)
+- [Objective-C Example](../ObjectiveCExample/)

@@ -9,11 +9,11 @@ AI-powered iOS SDK to discover hidden app revenue from non-paying users.
 
 ## Features
 
-- 🤖 **AI User Prediction**: Predict purchase likelihood using machine learning
+- 💰 **Dynamic Pricing**: Personalized offers via `getOffer` API
 - 📊 **Real-time Analytics**: Track user behavior and engagement
-- 🎯 **A/B Testing**: Built-in support for conversion optimization
-- 💰 **Smart Discounts**: Automatic discount creation and management
 - 🛒 **StoreKit Integration**: Full support for StoreKit 1 & 2
+- 🔗 **RevenueCat Compatible**: Seamless integration with RevenueCat
+- 📱 **Swift & Objective-C**: Native support for both languages
 
 ## Getting Started
 

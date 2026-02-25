@@ -1,99 +1,72 @@
 # Monetai iOS SDK Examples
 
-This directory contains example projects demonstrating how to integrate Monetai iOS SDK using different package managers and integration methods.
+This directory contains example projects demonstrating how to integrate Monetai iOS SDK using different package managers and languages. All examples showcase **dynamic pricing** via the `getOffer` API with RevenueCat for subscription management.
 
 ## Available Examples
 
-### 🎯 Simple App Example
-
-**Location**: `SimpleApp/`
-
-- **Start here first** - The most basic example to understand core concepts
-- Simple UIKit-based app using Swift Package Manager
-- Basic SDK integration and core feature demonstration
-- Perfect starting point to understand SDK core features
-
-[📖 View Simple App Example →](SimpleApp/)
-
-### 📦 Swift Package Manager Example
+### Swift Package Manager Example
 
 **Location**: `SwiftPackageManagerExample/`
 
-- Advanced integration method using Swift Package Manager
-- Native Xcode support with SwiftUI
-- RevenueCat integration for purchase functionality
+- Native Xcode dependency management with Swift Package Manager
+- SwiftUI with RevenueCat integration
+- Dynamic pricing with `getOffer` API
 - Complete production-ready example
 
-[📖 View Swift Package Manager Example →](SwiftPackageManagerExample/)
+[View Swift Package Manager Example](SwiftPackageManagerExample/)
 
-### 🍫 CocoaPods Example
+### CocoaPods Example
 
 **Location**: `CocoaPodsExample/`
 
 - Traditional iOS dependency manager
 - SwiftUI with RevenueCat integration
-- RevenueCat integration for purchase functionality
+- Dynamic pricing with `getOffer` API
 - Easy setup with Podfile
-- Demonstrates StoreKit integration
 
-[📖 View CocoaPods Example →](CocoaPodsExample/)
+[View CocoaPods Example](CocoaPodsExample/)
 
-### 📱 Objective-C Example
+### Objective-C Example
 
 **Location**: `ObjectiveCExample/`
 
-- Objective-C implementation of core SDK features
+- Objective-C implementation with completion handler pattern
 - UIKit-based interface with CocoaPods
-- Same functionality as Swift SimpleApp
+- Dynamic pricing with `getOffer` API
+- RevenueCat integration for product loading and purchases
 - Perfect for Objective-C codebases
-- Demonstrates SDK integration in Objective-C
 
-[📖 View Objective-C Example →](ObjectiveCExample/)
+[View Objective-C Example](ObjectiveCExample/)
 
 ## Quick Start
 
-1. **Start with SimpleApp** - Understand basic SDK functionality first
-2. **Choose** your preferred integration method for advanced features
-3. **Navigate** to the example directory
-4. **Follow** the example's README for detailed setup instructions
-5. **Configure** your API keys in `Constants.swift`
-6. **Build and run** the example
+1. **Choose** your preferred integration method
+2. **Navigate** to the example directory
+3. **Follow** the example's README for detailed setup instructions
+4. **Configure** your API keys in `Constants.swift` (or `Constants.m` for Objective-C)
+5. **Build and run** the example
 
 ## Common Features
 
 All examples demonstrate:
 
-- ✅ SDK initialization and configuration
-- ✅ Event logging with parameters
-- ✅ AI-powered user prediction
-- ✅ Discount management and real-time updates
-- ✅ Error handling
-
-**Advanced Examples (Swift Package Manager & CocoaPods) additionally include:**
-
-- ✅ RevenueCat integration for subscription management
-- ✅ In-app purchase functionality
-- ✅ StoreKit integration
-
-**Objective-C Example includes:**
-
-- ✅ UIKit-based interface
-- ✅ Objective-C SDK integration patterns
-- ✅ Memory management best practices
+- SDK initialization and configuration
+- Dynamic pricing with `getOffer` API
+- Event logging with parameters
+- RevenueCat integration for subscription management
+- Product display with discount pricing
+- `logViewProductItem` for product view tracking
 
 ## Prerequisites
 
 - **Xcode**: 15.0 or later
-- **iOS**: 13.0 or later
+- **iOS**: 16.0 or later
 - **Valid SDK Key**: Obtain from Monetai Dashboard
+- **RevenueCat API Key**: Required for subscription features
 
 ## Getting Help
 
-- 📖 [Main SDK Documentation](../README.md)
-- 🐛 [GitHub Issues](https://github.com/hayanmind/monetai-ios/issues)
-- 📧 [Email Support](mailto:support@monetai.io)
-- 🌐 [Online Documentation](https://docs.monetai.io)
-
----
-
-**Happy coding!** 🚀
+- [Main SDK Documentation](../README.md)
+- [GitHub Issues](https://github.com/hayanmind/monetai-ios/issues)
+- [Email Support](mailto:support@monetai.io)
+- [Online Documentation](https://docs.monetai.io)
