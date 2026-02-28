@@ -168,6 +168,9 @@ docs/_build/
 *.tar.gz
 *.rar
 
+# Claude Code
+CLAUDE.local.md
+
 # OS generated files
 Thumbs.db
 ehthumbs.db

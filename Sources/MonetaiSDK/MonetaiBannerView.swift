@@ -22,6 +22,10 @@ import WebKit
         setupWebView()
     }
 
+    deinit {
+        webView?.configuration.userContentController.removeScriptMessageHandler(forName: "monetai")
+    }
+
     @objc public func configure(bannerParams: BannerParams, onPaywall: @escaping () -> Void) {
         self.bannerParams = bannerParams
         self.onPaywall = onPaywall
@@ -36,8 +40,6 @@ import WebKit
         case .keyFeatureSummary:
             cornerRadius = 16
         case .highlightBenefits:
-            cornerRadius = 12
-        default:
             cornerRadius = 12
         }
         
@@ -69,8 +71,8 @@ import WebKit
 
         let config = WKWebViewConfiguration()
         let contentController = WKUserContentController()
-        // Use native 'monetai' channel for messaging
-        contentController.add(self, name: "monetai")
+        // Use native 'monetai' channel for messaging (weak wrapper to avoid retain cycle)
+        contentController.add(WeakScriptMessageHandler(delegate: self), name: "monetai")
         config.userContentController = contentController
 
         webView = WKWebView(frame: .zero, configuration: config)

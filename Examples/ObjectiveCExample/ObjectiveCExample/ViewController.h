@@ -1,12 +1,11 @@
 //
 //  ViewController.h
-//  SimpleAppObjectiveC
+//  ObjectiveCExample
 //
 //  Created by Daehoon Kim on 7/24/25.
 //
 
 #import <UIKit/UIKit.h>
-#import <MonetaiSDK/MonetaiSDK-Swift.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -15,4 +14,3 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 NS_ASSUME_NONNULL_END
-

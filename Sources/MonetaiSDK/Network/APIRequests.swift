@@ -3,84 +3,69 @@ import Alamofire
 
 /// Struct containing API request methods
 struct APIRequests {
-    
+
     // MARK: - Initialize
     struct InitializeRequest: Codable {
         let sdkKey: String
         let platform: String
         let version: String
     }
-    
+
     struct InitializeResponse: Codable {
         let organizationId: Int
         let platform: String
         let version: String
-        
+        let serverTimestamp: Int64
+
         enum CodingKeys: String, CodingKey {
             case organizationId = "organization_id"
             case platform
             case version
+            case serverTimestamp = "server_timestamp"
         }
     }
-    
-    static func initialize(sdkKey: String, userId: String) async throws -> (InitializeResponse, ABTestResponse) {
+
+    static func initialize(sdkKey: String) async throws -> InitializeResponse {
         let initRequest = InitializeRequest(
             sdkKey: sdkKey,
             platform: "ios",
             version: SDKVersion.getVersion()
         )
-        
+
         let initResponse: InitializeResponse = try await APIClient.shared.request(
             endpoint: "/sdk-integrations",
             method: .post,
             parameters: initRequest.dictionary,
             encoding: JSONEncoding.default
         )
-        
-        let abTestResponse: ABTestResponse = try await APIClient.shared.request(
-            endpoint: "/ab-test",
-            method: .post,
-            parameters: [
-                "sdkKey": sdkKey,
-                "userId": userId,
-                "platform": "ios"
-            ],
-            encoding: JSONEncoding.default
-        )
-        
-        return (initResponse, abTestResponse)
+
+        return initResponse
     }
-    
-    // MARK: - AB Test
-    struct ABTestResponse: Codable {
-        let group: ABTestGroup?
-        let campaign: Campaign?
-    }
-    
+
     // MARK: - Events
     struct EventRequest {
         let sdkKey: String
         let userId: String
         let eventName: String
-        let createdAt: Date
+        let createdAt: Date?
         let params: [String: Any]?
         let platform: String
-        
+
         var dictionary: [String: Any] {
-            // Convert Date to ISO8601 string
-            let formatter = ISO8601DateFormatter()
-            formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-            
             var dict: [String: Any] = [
                 "sdkKey": sdkKey,
                 "userId": userId,
                 "eventName": eventName,
-                "createdAt": formatter.string(from: createdAt),
                 "platform": platform
             ]
-            
+
+            if let createdAt = createdAt {
+                let formatter = ISO8601DateFormatter()
+                formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+                dict["createdAt"] = formatter.string(from: createdAt)
+            }
+
             if let params = params {
-                // Check if params can be JSON serialized
                 do {
                     _ = try JSONSerialization.data(withJSONObject: params)
                     dict["params"] = params
@@ -91,8 +76,8 @@ struct APIRequests {
             return dict
         }
     }
-    
-    static func createEvent(sdkKey: String, userId: String, eventName: String, params: [String: Any]? = nil, createdAt: Date = Date()) async throws {
+
+    static func createEvent(sdkKey: String, userId: String, eventName: String, params: [String: Any]? = nil, createdAt: Date? = nil) async throws {
         let request = EventRequest(
             sdkKey: sdkKey,
             userId: userId,
@@ -101,7 +86,7 @@ struct APIRequests {
             params: params,
             platform: "ios"
         )
-        
+
         let _: EmptyResponse = try await APIClient.shared.request(
             endpoint: "/events",
             method: .post,
@@ -109,83 +94,56 @@ struct APIRequests {
             encoding: JSONEncoding.default
         )
     }
-    
-    // MARK: - Predict
-    struct PredictRequest: Codable {
-        let sdkKey: String
-        let userId: String
-    }
-    
-    struct PredictResponse: Codable {
-        let prediction: PredictResult?
-        let testGroup: ABTestGroup?
-    }
-    
-    static func predict(sdkKey: String, userId: String) async throws -> PredictResponse {
-        let request = PredictRequest(sdkKey: sdkKey, userId: userId)
-        
-        return try await APIClient.shared.request(
-            endpoint: "/predict",
-            method: .post,
-            parameters: request.dictionary,
-            encoding: JSONEncoding.default
-        )
-    }
-    
-    // MARK: - App User Discount
-    struct CreateDiscountRequest: Codable {
-        let sdkKey: String
-        let appUserId: String
-        let startedAt: Date
-        let endedAt: Date
-        
-        enum CodingKeys: String, CodingKey {
-            case sdkKey
-            case appUserId
-            case startedAt
-            case endedAt
+
+    // MARK: - View Product Item Event
+    static func createViewProductItemEvent(sdkKey: String, userId: String, params: ViewProductItemParams, createdAt: Date? = nil) async throws {
+        var dict: [String: Any] = [
+            "sdkKey": sdkKey,
+            "userId": userId,
+            "productId": params.productId,
+            "price": params.price,
+            "regularPrice": params.regularPrice,
+            "currencyCode": params.currencyCode,
+            "promotionId": params.promotionId,
+            "platform": "ios"
+        ]
+
+        if let month = params.month {
+            dict["month"] = month.intValue
         }
-    }
-    
-    struct CreateDiscountResponse: Codable {
-        let discount: AppUserDiscount
-    }
-    
-    static func createAppUserDiscount(sdkKey: String, userId: String, startedAt: Date, endedAt: Date) async throws -> AppUserDiscount {
-        let request = CreateDiscountRequest(
-            sdkKey: sdkKey,
-            appUserId: userId,
-            startedAt: startedAt,
-            endedAt: endedAt
-        )
-        
-        let response: CreateDiscountResponse = try await APIClient.shared.request(
-            endpoint: "/app-user-discounts",
+
+        if let createdAt = createdAt {
+            let formatter = ISO8601DateFormatter()
+            formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+            dict["createdAt"] = formatter.string(from: createdAt)
+        }
+
+        let _: EmptyResponse = try await APIClient.shared.request(
+            endpoint: "/events/view-product-item",
             method: .post,
-            parameters: request.dictionary,
+            parameters: dict,
             encoding: JSONEncoding.default
         )
-        
-        return response.discount
     }
-    
-    struct GetDiscountResponse: Codable {
-        let discount: AppUserDiscount?
-    }
-    
-    static func getAppUserDiscount(sdkKey: String, userId: String) async throws -> AppUserDiscount? {
-        let response: GetDiscountResponse = try await APIClient.shared.request(
-            endpoint: "/app-user-discounts/latest",
-            method: .get,
-            parameters: [
-                "sdkKey": sdkKey,
-                "appUserId": userId
-            ]
+
+    // MARK: - Get Offer
+    static func getOffer(sdkKey: String, userId: String, promotionId: Int) async throws -> Offer? {
+        let parameters: [String: Any] = [
+            "sdkKey": sdkKey,
+            "userId": userId,
+            "promotionId": promotionId,
+            "platform": "ios"
+        ]
+
+        let offer: Offer? = try await APIClient.shared.request(
+            endpoint: "/offers/get-offer",
+            method: .post,
+            parameters: parameters,
+            encoding: JSONEncoding.default
         )
-        
-        return response.discount
+        return offer
     }
-    
+
     // MARK: - Transaction ID Mapping
     struct TransactionMappingRequest: Codable {
         let transactionId: String
@@ -193,7 +151,7 @@ struct APIRequests {
         let userId: String
         let sdkKey: String
     }
-    
+
     static func mapTransactionToUser(transactionId: String, bundleId: String, sdkKey: String, userId: String) async throws {
         let request = TransactionMappingRequest(
             transactionId: transactionId,
@@ -201,7 +159,7 @@ struct APIRequests {
             userId: userId,
             sdkKey: sdkKey
         )
-        
+
         let _: EmptyResponse = try await APIClient.shared.request(
             endpoint: "/transaction-id-to-user-id/ios",
             method: .post,
@@ -209,7 +167,7 @@ struct APIRequests {
             encoding: JSONEncoding.default
         )
     }
-    
+
     // MARK: - Receipt Validation
     struct ReceiptValidationRequest: Codable {
         let receiptData: String
@@ -217,7 +175,7 @@ struct APIRequests {
         let userId: String
         let sdkKey: String
     }
-    
+
     static func validateReceipt(receiptData: String, bundleId: String, sdkKey: String, userId: String) async throws {
         let request = ReceiptValidationRequest(
             receiptData: receiptData,
@@ -225,7 +183,7 @@ struct APIRequests {
             userId: userId,
             sdkKey: sdkKey
         )
-        
+
         let _: EmptyResponse = try await APIClient.shared.request(
             endpoint: "/transaction-id-to-user-id/ios/receipt",
             method: .post,
@@ -239,8 +197,7 @@ struct APIRequests {
 extension Encodable {
     var dictionary: [String: Any] {
         let encoder = JSONEncoder()
-        
-        // Encode to ISO 8601 date format
+
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         encoder.dateEncodingStrategy = .custom { date, encoder in
@@ -248,10 +205,10 @@ extension Encodable {
             var container = encoder.singleValueContainer()
             try container.encode(dateString)
         }
-        
+
         guard let data = try? encoder.encode(self) else { return [:] }
         return (try? JSONSerialization.jsonObject(with: data, options: .allowFragments)).flatMap { $0 as? [String: Any] } ?? [:]
     }
 }
 
-struct EmptyResponse: Codable {} 
+struct EmptyResponse: Codable {}

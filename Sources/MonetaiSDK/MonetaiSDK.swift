@@ -6,12 +6,10 @@ import UIKit
 @objc public class LogEventOptions: NSObject {
     @objc public let eventName: String
     @objc public let params: [String: Any]?
-    @objc public let createdAt: Date
-    
-    @objc public init(eventName: String, params: [String: Any]? = nil, createdAt: Date = Date()) {
+
+    @objc public init(eventName: String, params: [String: Any]? = nil) {
         self.eventName = eventName
         self.params = params
-        self.createdAt = createdAt
         super.init()
     }
 }
@@ -22,59 +20,65 @@ public extension LogEventOptions {
     @objc static func event(_ eventName: String) -> LogEventOptions {
         return LogEventOptions(eventName: eventName)
     }
-    
+
     /// Event with parameters
     @objc static func event(_ eventName: String, params: [String: Any]) -> LogEventOptions {
         return LogEventOptions(eventName: eventName, params: params)
     }
 }
 
+// MARK: - Pending Event Types
+
+/// Pending custom event (logged before SDK initialization)
+private struct PendingCustomEvent {
+    let eventName: String
+    let params: [String: Any]?
+    let clientTimestamp: TimeInterval // Date().timeIntervalSince1970 * 1000
+}
+
+/// Pending view product item event (logged before SDK initialization)
+private struct PendingViewProductItemEvent {
+    let params: ViewProductItemParams
+    let clientTimestamp: TimeInterval
+}
+
+/// Discriminated union for pending events
+private enum PendingEvent {
+    case logEvent(PendingCustomEvent)
+    case viewProductItem(PendingViewProductItemEvent)
+}
+
 /// MonetaiSDK main class
 @objc public class MonetaiSDK: NSObject, ObservableObject {
-    
+
     // MARK: - Singleton
     @objc public static let shared = MonetaiSDK()
-    
+
     // MARK: - Properties
     @Published public private(set) var isInitialized: Bool = false
-    @Published public private(set) var exposureTimeSec: Int?
-    @Published public private(set) var currentDiscount: AppUserDiscount?
-    
+
     private var sdkKey: String?
     private var userId: String?
-    private var campaign: Campaign?
-    private var pendingEvents: [LogEventOptions] = []
-    
+    private var organizationId: Int = 0
+    private var pendingEvents: [PendingEvent] = []
+
+    /// Server-client time offset in milliseconds (serverTimestamp - clientTimestamp)
+    private var serverTimeOffset: Int64 = 0
+
     // MARK: - Internal Properties for StoreKit
     internal var currentSDKKey: String? { return sdkKey }
     internal var currentUserId: String? { return userId }
-    
-    // MARK: - Event Publisher
-    public let discountInfoLoaded = PassthroughSubject<Void, Never>()
-    
-    // MARK: - Discount Info Callback (Swift only)
-    public var onDiscountInfoChange: ((AppUserDiscount?) -> Void)?
-    
-    // MARK: - Objective-C Compatible Callback
-    @objc public var onDiscountInfoChangeCallback: ((Any?) -> Void)?
-    
+
     // MARK: - Paywall Management
     public let paywallManager = MonetaiPaywallManager()
     public let bannerManager = MonetaiBannerManager()
-    
-    // MARK: - Paywall Configuration
-    private var paywallConfig: PaywallConfig?
-    
-    // MARK: - Subscription State
-    private var isSubscriber: Bool = false
 
-    
     private override init() {
         super.init()
     }
-    
+
     // MARK: - Public Methods
-    
+
     /// Initialize MonetaiSDK
     /// - Parameters:
     ///   - sdkKey: SDK key (required)
@@ -87,128 +91,96 @@ public extension LogEventOptions {
         userId: String,
         useStoreKit2: Bool = false
     ) async throws -> InitializeResult {
-        
+
         // Validation
         guard !sdkKey.isEmpty else {
             throw MonetaiError.invalidSDKKey
         }
-        
+
         guard !userId.isEmpty else {
             throw MonetaiError.invalidUserId
         }
-        
+
         // If already initialized
         if isInitialized {
             return InitializeResult(
-                organizationId: 0, // In practice, use stored value
+                organizationId: organizationId,
                 platform: "ios",
                 version: SDKVersion.getVersion(),
-                userId: userId,
-                group: nil // In practice, use stored value
+                userId: userId
             )
         }
-        
+
         // Store SDK key and user ID
         self.sdkKey = sdkKey
         self.userId = userId
-        
+
+        // Set API headers
+        APIClient.shared.setUserIdHeader(userId)
+
+        if let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String {
+            APIClient.shared.setAppVersionHeader(appVersion)
+        }
+        if let bundleId = Bundle.main.bundleIdentifier {
+            APIClient.shared.setBundleIdHeader(bundleId)
+        }
+
         // Start StoreKit observation
         StoreKitManager.shared.startObserving(useStoreKit2: useStoreKit2)
-        
+
         // Send receipt (in background)
         Task {
             await StoreKitManager.shared.sendReceipt()
         }
-        
+
         // API initialization
-        let (initResponse, abTestResponse) = try await APIRequests.initialize(sdkKey: sdkKey, userId: userId)
-        
-        // Store campaign information
-        self.campaign = abTestResponse.campaign
-        self.exposureTimeSec = abTestResponse.campaign?.exposureTimeSec
-        
+        let initResponse = try await APIRequests.initialize(sdkKey: sdkKey)
+
+        // Store organization ID and calculate server-client time offset
+        self.organizationId = initResponse.organizationId
+        let clientTimestamp = Int64(Date().timeIntervalSince1970 * 1000)
+        self.serverTimeOffset = initResponse.serverTimestamp - clientTimestamp
+
         // Initialization complete
         isInitialized = true
-        
+
         // Process pending events
-        print("[MonetaiSDK] 📋 SDK initialization complete - Starting to process pending events...")
         await processPendingEvents()
-        print("[MonetaiSDK] ✅ Pending events processing complete")
-        
-        // Trigger discount info loaded event
-        discountInfoLoaded.send()
-        
-        // Automatically check discount information after initialization
-        await loadDiscountInfoAutomatically()
-        
+
         return InitializeResult(
             organizationId: initResponse.organizationId,
             platform: initResponse.platform,
             version: initResponse.version,
-            userId: userId,
-            group: abTestResponse.group
+            userId: userId
         )
     }
-    
-    /// Automatically load discount information and update state
-    @MainActor
-    private func loadDiscountInfoAutomatically() async {
-        guard let sdkKey = sdkKey, let userId = userId else {
-            return
-        }
-        
-        do {
-            let discount = try await APIRequests.getAppUserDiscount(sdkKey: sdkKey, userId: userId)
-            
-            // Check if discount information belongs to current user
-            if let discount = discount, discount.appUserId != userId {
-                return
-            }
-            
-            // Update state
-            currentDiscount = discount
-            
-            // Call callback
-            onDiscountInfoChange?(discount)
-            onDiscountInfoChangeCallback?(discount as Any?)
-            
-            // Update paywall managers if config exists
-            if paywallConfig != nil {
-                configureManagersAndUpdateBanner()
-            }
-        } catch {
-            print("[MonetaiSDK] Discount information auto-load failed: \(error)")
-            currentDiscount = nil
-            onDiscountInfoChange?(nil)
-            onDiscountInfoChangeCallback?(nil as Any?)
-        }
-    }
-    
+
     /// Log event (using LogEventOptions)
     /// - Parameter options: Event options to log
     @MainActor
     public func logEvent(_ options: LogEventOptions) async {
         guard let sdkKey = sdkKey, let userId = userId else {
             // Add to queue if SDK is not initialized
-            pendingEvents.append(options)
+            pendingEvents.append(.logEvent(PendingCustomEvent(
+                eventName: options.eventName,
+                params: options.params,
+                clientTimestamp: Date().timeIntervalSince1970 * 1000
+            )))
             return
         }
-        
+
         do {
             try await APIRequests.createEvent(
                 sdkKey: sdkKey,
                 userId: userId,
                 eventName: options.eventName,
-                params: options.params,
-                createdAt: options.createdAt
+                params: options.params
             )
-            print("[MonetaiSDK] 🎉 Event logging success: \(options.eventName)")
         } catch {
-            print("[MonetaiSDK] ❌ Event logging failed: \(options.eventName)")
-            print("[MonetaiSDK] Error details: \(error)")
+            print("[MonetaiSDK] Event logging failed: \(options.eventName), error: \(error)")
         }
     }
-    
+
     /// Log event (basic method)
     /// - Parameters:
     ///   - eventName: Event name
@@ -218,163 +190,82 @@ public extension LogEventOptions {
         let options = LogEventOptions(eventName: eventName, params: params)
         await logEvent(options)
     }
-    
-    /// Perform user prediction
-    /// - Returns: Prediction result
+
+    /// Log a product view event for dynamic pricing feedback
+    /// - Parameter params: Product view parameters
     @MainActor
-    public func predict() async throws -> PredictResponse {
+    public func logViewProductItem(_ params: ViewProductItemParams) async {
+        guard let sdkKey = sdkKey, let userId = userId else {
+            // Add to queue if SDK is not initialized
+            pendingEvents.append(.viewProductItem(PendingViewProductItemEvent(
+                params: params,
+                clientTimestamp: Date().timeIntervalSince1970 * 1000
+            )))
+            return
+        }
+
+        do {
+            try await APIRequests.createViewProductItemEvent(
+                sdkKey: sdkKey,
+                userId: userId,
+                params: params
+            )
+        } catch {
+            print("[MonetaiSDK] View product item event failed: \(error)")
+        }
+    }
+
+    /// Get a dynamic pricing offer for a specific promotion
+    /// - Parameter promotionId: Promotion/campaign ID
+    /// - Returns: Offer with agent info and products, or nil if no match
+    @MainActor
+    public func getOffer(promotionId: Int) async throws -> Offer? {
         guard let sdkKey = sdkKey, let userId = userId else {
             throw MonetaiError.notInitialized
         }
-        
-        guard let exposureTimeSec = exposureTimeSec else {
-            throw MonetaiError.notInitialized
-        }
-        
-        let result = try await APIRequests.predict(sdkKey: sdkKey, userId: userId)
-        
-        // Create discount for non-purchaser prediction
-        if result.prediction == .nonPurchaser {
-            await handleNonPurchaserPrediction(sdkKey: sdkKey, userId: userId, exposureTimeSec: exposureTimeSec)
-        }
-        
-        return PredictResponse(
-            prediction: result.prediction,
-            testGroup: result.testGroup
+
+        return try await APIRequests.getOffer(
+            sdkKey: sdkKey,
+            userId: userId,
+            promotionId: promotionId
         )
     }
-    
-    /// Get current user's discount information
-    /// - Returns: Discount information (nil if none)
-    @MainActor
-    public func getCurrentDiscount() async throws -> AppUserDiscount? {
-        guard let sdkKey = sdkKey, let userId = userId else {
-            throw MonetaiError.notInitialized
-        }
-        
-        return try await APIRequests.getAppUserDiscount(sdkKey: sdkKey, userId: userId)
-    }
-    
-    /// Check if active discount exists
-    /// - Returns: Whether active discount exists
-    @MainActor
-    public func hasActiveDiscount() async throws -> Bool {
-        guard let discount = try await getCurrentDiscount() else {
-            return false
-        }
-        
-        return discount.endedAt > Date()
-    }
-    
+
     /// Reset SDK
     @MainActor
     @objc public func reset() {
         sdkKey = nil
         userId = nil
-        campaign = nil
-        exposureTimeSec = nil
+        organizationId = 0
         isInitialized = false
         pendingEvents.removeAll()
-        
+        serverTimeOffset = 0
+
         // Stop StoreKit observation
         StoreKitManager.shared.stopObserving()
     }
-    
+
     /// Return current user ID
     @objc public func getUserId() -> String? {
         return userId
     }
-    
+
     /// Return current SDK key
     @objc public func getSdkKey() -> String? {
         return sdkKey
     }
-    
+
     /// Return SDK initialization status
     @objc public func getInitialized() -> Bool {
         return isInitialized
     }
-    
-    /// Return current exposure time (seconds)
-    
-    // MARK: - Paywall Methods
-    
-    /// Configure paywall with the specified configuration
-    /// - Parameter config: Paywall configuration
-    @objc public func configurePaywall(_ config: PaywallConfig) {
-        self.paywallConfig = config
-        
-        // Configure managers and update banner
-        configureManagersAndUpdateBanner()
-    }
-    
-    /// Set initial subscription status (can be called before or after configurePaywall)
-    /// - Parameter isSubscriber: Whether the user is currently a subscriber
-    @objc public func setSubscriptionStatus(_ isSubscriber: Bool) {
-        self.isSubscriber = isSubscriber
-        
-        // If paywall is already configured, update banner visibility
-        if paywallConfig != nil {
-            configureManagersAndUpdateBanner()
-        }
-        
-        print("[MonetaiSDK] Subscription status set: \(isSubscriber ? "Subscriber" : "Non-subscriber")")
-    }
-    
-    // MARK: - Private Helper Methods
-    
-    /// Configure paywall and banner managers, then update banner visibility
-    private func configureManagersAndUpdateBanner() {
-        guard let paywallConfig = paywallConfig,
-              let discountInfo = convertToDiscountInfo() else { return }
-        
-        // Configure managers
-        paywallManager.configure(paywallConfig: paywallConfig, discountInfo: discountInfo)
-        bannerManager.configure(paywallConfig: paywallConfig, discountInfo: discountInfo, paywallManager: paywallManager)
-        
-        // Auto control banner visibility based on subscription status, discount state and paywall config
-        guard let discount = currentDiscount,
-              discount.endedAt > Date(),
-              paywallConfig.enabled,
-              !self.isSubscriber else {
-            // Hide banner if user is subscriber, no discount, expired, or paywall disabled
-            if bannerManager.bannerVisible {
-                bannerManager.hideBanner()
-            }
-            return
-        }
-        
-        // Show banner if all conditions are met (active discount, enabled, not a subscriber)
-        if !bannerManager.bannerVisible {
-            bannerManager.showBanner()
-        }
-    }
-    
-    private func convertToDiscountInfo() -> DiscountInfo? {
-        guard let currentDiscount = currentDiscount else { return nil }
-        
-        return DiscountInfo(
-            startedAt: currentDiscount.startedAt,
-            endedAt: currentDiscount.endedAt,
-            userId: currentDiscount.appUserId,
-            sdkKey: currentDiscount.sdkKey
-        )
-    }
-    public func getExposureTimeSec() -> Int? {
-        return exposureTimeSec
-    }
-    
+
     // MARK: - Objective-C Compatible Methods
-    
+
     /// Initialize MonetaiSDK (Objective-C compatible)
-    /// - Parameters:
-    ///   - sdkKey: SDK key (required)
-    ///   - userId: User unique ID (required)
-    ///   - useStoreKit2: Whether to use StoreKit2 (default: false)
-    ///   - completion: Completion handler with result
-    @objc public func initializeWithSdkKey(_ sdkKey: String, 
-                                          userId: String, 
-                                          useStoreKit2: Bool, 
+    @objc public func initializeWithSdkKey(_ sdkKey: String,
+                                          userId: String,
+                                          useStoreKit2: Bool,
                                           completion: @escaping (InitializeResult?, Error?) -> Void) {
         Task {
             do {
@@ -385,133 +276,74 @@ public extension LogEventOptions {
             }
         }
     }
-    
-    /// Perform user prediction (Objective-C compatible)
-    /// - Parameter completion: Completion handler with result
-    @objc public func predictWithCompletion(_ completion: @escaping (PredictResponse?, Error?) -> Void) {
-        Task {
-            do {
-                let result = try await predict()
-                completion(result, nil)
-            } catch {
-                completion(nil, error)
-            }
-        }
-    }
-    
+
     /// Log event (Objective-C compatible)
-    /// - Parameters:
-    ///   - eventName: Event name
-    ///   - params: Event parameters (optional)
     @objc public func logEventWithEventName(_ eventName: String, params: [String: Any]? = nil) {
         Task {
             await logEvent(eventName: eventName, params: params)
         }
     }
-    
-    /// Get current user's discount information (Objective-C compatible)
-    /// - Parameter completion: Completion handler with result
-    @objc public func getCurrentDiscountWithCompletion(_ completion: @escaping (AppUserDiscount?, Error?) -> Void) {
+
+    /// Log view product item event (Objective-C compatible)
+    @objc public func logViewProductItemWithParams(_ params: ViewProductItemParams) {
+        Task {
+            await logViewProductItem(params)
+        }
+    }
+
+    /// Get offer (Objective-C compatible)
+    @objc public func getOfferWithPromotionId(_ promotionId: Int, completion: @escaping (Offer?, Error?) -> Void) {
         Task {
             do {
-                let discount = try await getCurrentDiscount()
-                completion(discount, nil)
+                let offer = try await getOffer(promotionId: promotionId)
+                completion(offer, nil)
             } catch {
                 completion(nil, error)
             }
         }
     }
-    
-    /// Check if active discount exists (Objective-C compatible)
-    /// - Parameter completion: Completion handler with result
-    @objc public func hasActiveDiscountWithCompletion(_ completion: @escaping (Bool, Error?) -> Void) {
-        Task {
-            do {
-                let hasDiscount = try await hasActiveDiscount()
-                completion(hasDiscount, nil)
-            } catch {
-                completion(false, error)
-            }
-        }
-    }
-    
-    // MARK: - Paywall Methods (Objective-C Compatible)
-    
-    /// Configure paywall (Objective-C compatible)
-    /// - Parameter config: Paywall configuration
-    @objc public func configurePaywallWithConfig(_ config: PaywallConfig) {
-        configurePaywall(config)
-    }
-    
 
-    
-
-    
-
-    
-
-    
     // MARK: - Private Methods
-    
+
     private func processPendingEvents() async {
         guard let sdkKey = sdkKey, let userId = userId else { return }
-        
+
         let events = pendingEvents
         pendingEvents.removeAll()
-        
+
         if events.isEmpty {
             return
         }
-        
-        print("[MonetaiSDK] 🚀 Processing \(events.count) pending events")
-        
+
         for event in events {
             do {
-                try await APIRequests.createEvent(
-                    sdkKey: sdkKey,
-                    userId: userId,
-                    eventName: event.eventName,
-                    params: event.params,
-                    createdAt: event.createdAt
-                )
-                print("[MonetaiSDK] ✅ Event processed: \(event.eventName)")
+                switch event {
+                case .logEvent(let customEvent):
+                    let adjustedTimestamp = customEvent.clientTimestamp + Double(serverTimeOffset)
+                    let createdAt = Date(timeIntervalSince1970: adjustedTimestamp / 1000)
+
+                    try await APIRequests.createEvent(
+                        sdkKey: sdkKey,
+                        userId: userId,
+                        eventName: customEvent.eventName,
+                        params: customEvent.params,
+                        createdAt: createdAt
+                    )
+
+                case .viewProductItem(let viewEvent):
+                    let adjustedTimestamp = viewEvent.clientTimestamp + Double(serverTimeOffset)
+                    let createdAt = Date(timeIntervalSince1970: adjustedTimestamp / 1000)
+
+                    try await APIRequests.createViewProductItemEvent(
+                        sdkKey: sdkKey,
+                        userId: userId,
+                        params: viewEvent.params,
+                        createdAt: createdAt
+                    )
+                }
             } catch {
-                print("[MonetaiSDK] ❌ Event processing failed: \(event.eventName)")
-                print("[MonetaiSDK] Error details: \(error)")
+                print("[MonetaiSDK] Pending event processing failed: \(error)")
             }
-        }
-        
-        print("[MonetaiSDK] 🎉 All pending events processed")
-    }
-    
-    private func handleNonPurchaserPrediction(sdkKey: String, userId: String, exposureTimeSec: Int) async {
-        do {
-            // Check existing discount information
-            let existingDiscount = try await APIRequests.getAppUserDiscount(sdkKey: sdkKey, userId: userId)
-            
-            let now = Date()
-            let hasActiveDiscount = existingDiscount != nil && existingDiscount!.endedAt > now
-            
-            if !hasActiveDiscount {
-                // Create new discount
-                let startedAt = now
-                let endedAt = Calendar.current.date(byAdding: .second, value: exposureTimeSec, to: startedAt) ?? startedAt
-                
-                _ = try await APIRequests.createAppUserDiscount(
-                    sdkKey: sdkKey,
-                    userId: userId,
-                    startedAt: startedAt,
-                    endedAt: endedAt
-                )
-                
-                // Trigger discount info loaded event
-                discountInfoLoaded.send()
-                
-                // Automatically load discount information
-                await loadDiscountInfoAutomatically()
-            }
-        } catch {
-            print("[MonetaiSDK] Discount creation failed: \(error)")
         }
     }
 }
@@ -524,50 +356,16 @@ public extension LogEventOptions {
     @objc public let platform: String
     @objc public let version: String
     @objc public let userId: String
-    public let group: ABTestGroup?
-    
-    public init(organizationId: Int, platform: String, version: String, userId: String, group: ABTestGroup?) {
+
+    public init(organizationId: Int, platform: String, version: String, userId: String) {
         self.organizationId = organizationId
         self.platform = platform
         self.version = version
         self.userId = userId
-        self.group = group
         super.init()
     }
-    
-    // Objective-C compatible getters
-    @objc public var groupString: String? {
-        return group?.stringValue
-    }
-    
-    // Custom description for better logging
+
     public override var description: String {
-        return "InitializeResult(organizationId: \(organizationId), platform: \"\(platform)\", version: \"\(version)\", userId: \"\(userId)\", group: \(group?.stringValue ?? "nil"))"
+        return "InitializeResult(organizationId: \(organizationId), platform: \"\(platform)\", version: \"\(version)\", userId: \"\(userId)\")"
     }
 }
-
-/// Prediction response result
-@objc public class PredictResponse: NSObject {
-    public let prediction: PredictResult?
-    public let testGroup: ABTestGroup?
-    
-    public init(prediction: PredictResult?, testGroup: ABTestGroup?) {
-        self.prediction = prediction
-        self.testGroup = testGroup
-        super.init()
-    }
-    
-    // Objective-C compatible getters
-    @objc public var predictionString: String? {
-        return prediction?.stringValue
-    }
-    
-    @objc public var testGroupString: String? {
-        return testGroup?.stringValue
-    }
-    
-    // Custom description for better logging
-    public override var description: String {
-        return "PredictResponse(prediction: \(prediction?.stringValue ?? "nil"), testGroup: \(testGroup?.stringValue ?? "nil"))"
-    }
-} 

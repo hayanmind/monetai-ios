@@ -1,39 +1,82 @@
 import Foundation
 import Alamofire
 
+/// Thread-safe header adapter that automatically injects SDK headers into every request
+private final class SDKHeaderAdapter: RequestInterceptor, @unchecked Sendable {
+    private let lock = NSLock()
+    private var headers: [String: String] = [
+        SDKHeaders.sdkPlatform: "ios",
+        SDKHeaders.sdkVersion: SDKVersion.getVersion(),
+        SDKHeaders.deviceOS: "ios"
+    ]
+
+    func setHeader(_ key: String, value: String) {
+        lock.lock()
+        defer { lock.unlock() }
+        headers[key] = value
+    }
+
+    func adapt(_ urlRequest: URLRequest, for session: Session, completion: @escaping (Result<URLRequest, any Error>) -> Void) {
+        var request = urlRequest
+        lock.lock()
+        let snapshot = headers
+        lock.unlock()
+        for (key, value) in snapshot {
+            request.setValue(value, forHTTPHeaderField: key)
+        }
+        completion(.success(request))
+    }
+}
+
 /// API client class
-final class APIClient: Sendable {
+final class APIClient: @unchecked Sendable {
     static let shared = APIClient()
-    
+
     private let baseURL = "https://monetai-api-414410537412.us-central1.run.app/sdk"
     private let session: Session
     private let decoder: JSONDecoder
-    
+    private let headerAdapter = SDKHeaderAdapter()
+
     private init() {
         let configuration = URLSessionConfiguration.default
         configuration.timeoutIntervalForRequest = 30
         configuration.timeoutIntervalForResource = 60
-        self.session = Session(configuration: configuration)
-        
+        self.session = Session(configuration: configuration, interceptor: headerAdapter)
+
         // JSONDecoder configuration
         self.decoder = JSONDecoder()
-        
+
         // Support for ISO 8601 format with milliseconds
         self.decoder.dateDecodingStrategy = .custom { decoder in
             let container = try decoder.singleValueContainer()
             let dateString = try container.decode(String.self)
-            
+
             let formatter = ISO8601DateFormatter()
             formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-            
+
             if let date = formatter.date(from: dateString) {
                 return date
             }
-            
+
             throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid date format: \(dateString)")
         }
     }
-    
+
+    /// Set App Version header (called during initialization)
+    func setAppVersionHeader(_ version: String) {
+        headerAdapter.setHeader(SDKHeaders.appVersion, value: version)
+    }
+
+    /// Set Bundle ID header (called during initialization)
+    func setBundleIdHeader(_ bundleId: String) {
+        headerAdapter.setHeader(SDKHeaders.bundleId, value: bundleId)
+    }
+
+    /// Set User ID header (called during initialization)
+    func setUserIdHeader(_ userId: String) {
+        headerAdapter.setHeader(SDKHeaders.userId, value: userId)
+    }
+
     /// Generic method to perform API requests
     func request<T: Codable>(
         endpoint: String,
@@ -42,7 +85,7 @@ final class APIClient: Sendable {
         encoding: ParameterEncoding = URLEncoding.default
     ) async throws -> T {
         let url = baseURL + endpoint
-        
+
         return try await withCheckedThrowingContinuation { continuation in
             session.request(url, method: method, parameters: parameters, encoding: encoding)
                 .validate()
@@ -51,27 +94,20 @@ final class APIClient: Sendable {
                     case .success(let data):
                         // Handle empty response - when data is nil or empty
                         let responseData = data ?? Data()
-                        
-                        let isEmptyResponse = responseData.isEmpty || 
-                                            responseData.count == 0 ||
+
+                        let isEmptyResponse = responseData.isEmpty ||
                                             String(data: responseData, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == true
-                        
+
                         if isEmptyResponse {
                             if T.self == EmptyResponse.self {
                                 continuation.resume(returning: EmptyResponse() as! T)
                                 return
-                            } else {
-                                let error = DecodingError.dataCorrupted(
-                                    DecodingError.Context(
-                                        codingPath: [],
-                                        debugDescription: "Empty response data"
-                                    )
-                                )
-                                continuation.resume(throwing: MonetaiError.networkError(error))
+                            } else if let nilValue = Optional<Any>.none as? T {
+                                continuation.resume(returning: nilValue)
                                 return
                             }
                         }
-                        
+
                         do {
                             let value = try self.decoder.decode(T.self, from: responseData)
                             continuation.resume(returning: value)
@@ -92,6 +128,16 @@ final class APIClient: Sendable {
     }
 }
 
+/// SDK HTTP header constants
+enum SDKHeaders {
+    static let sdkPlatform = "X-SDK-Platform"
+    static let sdkVersion = "X-SDK-Version"
+    static let deviceOS = "X-Device-OS"
+    static let appVersion = "X-App-Version"
+    static let bundleId = "X-App-Bundle-Id"
+    static let userId = "X-User-Id"
+}
+
 /// API error response model
 struct ErrorResponse: Codable {
     let message: String
@@ -104,8 +150,7 @@ public enum MonetaiError: Error, LocalizedError {
     case invalidUserId
     case apiError(String)
     case networkError(Error)
-    case storeKitError(Error)
-    
+
     public var errorDescription: String? {
         switch self {
         case .notInitialized:
@@ -118,8 +163,6 @@ public enum MonetaiError: Error, LocalizedError {
             return "API error: \(message)"
         case .networkError(let error):
             return "Network error: \(error.localizedDescription)"
-        case .storeKitError(let error):
-            return "StoreKit error: \(error.localizedDescription)"
         }
     }
-} 
+}
