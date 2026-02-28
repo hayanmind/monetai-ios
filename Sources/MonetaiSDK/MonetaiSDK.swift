@@ -1,6 +1,5 @@
 import Foundation
 import Combine
-import UIKit
 
 /// Struct representing event logging options
 @objc public class LogEventOptions: NSObject {
@@ -68,10 +67,6 @@ private enum PendingEvent {
     // MARK: - Internal Properties for StoreKit
     internal var currentSDKKey: String? { return sdkKey }
     internal var currentUserId: String? { return userId }
-
-    // MARK: - Paywall Management
-    public let paywallManager = MonetaiPaywallManager()
-    public let bannerManager = MonetaiBannerManager()
 
     private override init() {
         super.init()
