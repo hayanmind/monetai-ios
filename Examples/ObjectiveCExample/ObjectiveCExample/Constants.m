@@ -11,7 +11,7 @@
 NSString * const kSDKKey = @"your-sdk-key-here";
 NSString * const kUserId = @"example-user-id";
 BOOL const kUseStoreKit2 = YES;
-NSInteger const kPromotionId = 6;
+NSString * const kPlacement = @"your-placement-here";
 NSString * const kDefaultProductId = @"your-default-product-id-here";
 
 // MARK: - RevenueCat Configuration

@@ -22,7 +22,7 @@ struct ContentView: View {
     private let userId = Constants.userId
     private let useStoreKit2 = Constants.useStoreKit2
     private let revenueCatAPIKey = Constants.revenueCatAPIKey
-    private let promotionId = Constants.promotionId
+    private let placement = Constants.placement
     private let defaultProductId = Constants.defaultProductId
 
     // MARK: - Computed Properties
@@ -386,7 +386,7 @@ struct ContentView: View {
         await MainActor.run { isLoading = true }
 
         do {
-            let result = try await monetaiSDK.getOffer(promotionId: promotionId)
+            let result = try await monetaiSDK.getOffer(placement: placement)
 
             await MainActor.run {
                 isLoading = false
@@ -400,11 +400,11 @@ struct ContentView: View {
                     guard let pkg = pkg else { continue }
 
                     await monetaiSDK.logViewProductItem(ViewProductItemParams(
+                        placement: placement,
                         productId: pkg.storeProduct.productIdentifier,
                         price: NSDecimalNumber(decimal: pkg.storeProduct.price).doubleValue,
                         regularPrice: NSDecimalNumber(decimal: basePackage.storeProduct.price).doubleValue,
                         currencyCode: pkg.storeProduct.currencyCode ?? "USD",
-                        promotionId: promotionId,
                         month: pkg.storeProduct.subscriptionPeriod?.unit == .year ? 12 : nil
                     ))
                 }

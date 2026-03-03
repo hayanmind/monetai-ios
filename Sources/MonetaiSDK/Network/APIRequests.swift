@@ -104,7 +104,7 @@ struct APIRequests {
             "price": params.price,
             "regularPrice": params.regularPrice,
             "currencyCode": params.currencyCode,
-            "promotionId": params.promotionId,
+            "placement": params.placement,
             "platform": "ios"
         ]
 
@@ -127,11 +127,11 @@ struct APIRequests {
     }
 
     // MARK: - Get Offer
-    static func getOffer(sdkKey: String, userId: String, promotionId: Int) async throws -> Offer? {
+    static func getOffer(sdkKey: String, userId: String, placement: String) async throws -> Offer? {
         let parameters: [String: Any] = [
             "sdkKey": sdkKey,
             "userId": userId,
-            "promotionId": promotionId,
+            "placement": placement,
             "platform": "ios"
         ]
 
