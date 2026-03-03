@@ -491,7 +491,8 @@
                         price:pkg.storeProduct.price.doubleValue
                  regularPrice:basePackage.storeProduct.price.doubleValue
                  currencyCode:pkg.storeProduct.currencyCode ?: @"USD"
-                  promotionId:kPromotionId
+                  promotionId:@(kPromotionId)
+                    placement:@"promotion"
                         month:month];
 
         [[MonetaiSDK shared] logViewProductItemWithParams:params];

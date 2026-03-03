@@ -404,7 +404,8 @@ struct ContentView: View {
                         price: NSDecimalNumber(decimal: pkg.storeProduct.price).doubleValue,
                         regularPrice: NSDecimalNumber(decimal: basePackage.storeProduct.price).doubleValue,
                         currencyCode: pkg.storeProduct.currencyCode ?? "USD",
-                        promotionId: promotionId,
+                        promotionId: NSNumber(value: promotionId),
+                        placement: "promotion",
                         month: pkg.storeProduct.subscriptionPeriod?.unit == .year ? 12 : nil
                     ))
                 }

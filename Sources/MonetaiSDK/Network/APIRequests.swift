@@ -104,9 +104,13 @@ struct APIRequests {
             "price": params.price,
             "regularPrice": params.regularPrice,
             "currencyCode": params.currencyCode,
-            "promotionId": params.promotionId,
+            "placement": params.placement,
             "platform": "ios"
         ]
+
+        if let promotionId = params.promotionId {
+            dict["promotionId"] = promotionId.intValue
+        }
 
         if let month = params.month {
             dict["month"] = month.intValue
