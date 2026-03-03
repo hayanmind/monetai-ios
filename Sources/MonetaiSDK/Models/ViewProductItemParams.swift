@@ -6,7 +6,6 @@ import Foundation
     @objc public let price: Double
     @objc public let regularPrice: Double
     @objc public let currencyCode: String
-    @objc public let promotionId: NSNumber?
     @objc public let placement: String
     @objc public let month: NSNumber?
 
@@ -15,7 +14,6 @@ import Foundation
         price: Double,
         regularPrice: Double,
         currencyCode: String,
-        promotionId: NSNumber? = nil,
         placement: String,
         month: NSNumber? = nil
     ) {
@@ -23,7 +21,6 @@ import Foundation
         self.price = price
         self.regularPrice = regularPrice
         self.currencyCode = currencyCode
-        self.promotionId = promotionId
         self.placement = placement
         self.month = month
         super.init()

@@ -6,7 +6,7 @@ struct Constants {
     static let sdkKey = "your-sdk-key-here"
     static let userId = "example-user-id"
     static let useStoreKit2 = true
-    static let promotionId = 6
+    static let placement = "your-placement-here"
     static let defaultProductId = "your-default-product-id-here"
 
     // MARK: - RevenueCat Configuration
