@@ -127,11 +127,11 @@ await monetaiSDK.logEvent(eventName: "app_launched", params: [
 
 ```swift
 await monetaiSDK.logViewProductItem(ViewProductItemParams(
+    placement: placement,
     productId: product.sku,
     price: discountedPrice,
     regularPrice: regularPrice,
-    currencyCode: "USD",
-    placement: placement
+    currencyCode: "USD"
 ))
 ```
 

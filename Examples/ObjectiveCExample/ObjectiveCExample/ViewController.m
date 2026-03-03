@@ -487,11 +487,11 @@
         }
 
         ViewProductItemParams *params = [[ViewProductItemParams alloc]
-            initWithProductId:pkg.storeProduct.productIdentifier
+            initWithPlacement:kPlacement
+                    productId:pkg.storeProduct.productIdentifier
                         price:pkg.storeProduct.price.doubleValue
                  regularPrice:basePackage.storeProduct.price.doubleValue
                  currencyCode:pkg.storeProduct.currencyCode ?: @"USD"
-                    placement:kPlacement
                         month:month];
 
         [[MonetaiSDK shared] logViewProductItemWithParams:params];

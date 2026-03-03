@@ -400,11 +400,11 @@ struct ContentView: View {
                     guard let pkg = pkg else { continue }
 
                     await monetaiSDK.logViewProductItem(ViewProductItemParams(
+                        placement: placement,
                         productId: pkg.storeProduct.productIdentifier,
                         price: NSDecimalNumber(decimal: pkg.storeProduct.price).doubleValue,
                         regularPrice: NSDecimalNumber(decimal: basePackage.storeProduct.price).doubleValue,
                         currencyCode: pkg.storeProduct.currencyCode ?? "USD",
-                        placement: placement,
                         month: pkg.storeProduct.subscriptionPeriod?.unit == .year ? 12 : nil
                     ))
                 }

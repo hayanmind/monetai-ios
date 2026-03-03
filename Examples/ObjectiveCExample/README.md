@@ -76,11 +76,11 @@ Open `ObjectiveCExample.xcworkspace` in Xcode and run.
 
 ```objc
 ViewProductItemParams *params = [[ViewProductItemParams alloc]
-    initWithProductId:product.sku
+    initWithPlacement:kPlacement
+            productId:product.sku
                 price:discountedPrice
          regularPrice:regularPrice
          currencyCode:@"USD"
-            placement:kPlacement
                 month:nil];
 [[MonetaiSDK shared] logViewProductItemWithParams:params];
 ```
