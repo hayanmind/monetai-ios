@@ -56,8 +56,8 @@ Open `ObjectiveCExample.xcworkspace` in Xcode and run.
 ### Get Offer (Dynamic Pricing)
 
 ```objc
-[[MonetaiSDK shared] getOfferWithPromotionId:kPromotionId
-                                  completion:^(Offer *offer, NSError *error) {
+[[MonetaiSDK shared] getOfferWithPlacement:kPlacement
+                                completion:^(Offer *offer, NSError *error) {
     // offer.agentName - the matched agent
     // offer.products  - array of OfferProduct with sku, name, discountRate
 }];
@@ -80,7 +80,7 @@ ViewProductItemParams *params = [[ViewProductItemParams alloc]
                 price:discountedPrice
          regularPrice:regularPrice
          currencyCode:@"USD"
-          promotionId:kPromotionId
+            placement:kPlacement
                 month:nil];
 [[MonetaiSDK shared] logViewProductItemWithParams:params];
 ```
