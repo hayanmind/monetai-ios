@@ -308,11 +308,21 @@ private enum PendingEvent {
         }
     }
 
+    // MARK: - Anchor + Monotonic Clock for μs precision
+
+    /// Wall-clock anchor captured at class load time (Unix microseconds, ms precision)
+    private static let performanceOriginUs: Int64 = Int64(Date().timeIntervalSince1970 * 1_000_000)
+
+    /// Monotonic clock anchor captured at class load time (seconds, sub-ms precision)
+    private static let uptimeBaseSeconds: Double = ProcessInfo.processInfo.systemUptime
+
     // MARK: - Private Methods
 
-    /// Returns the current Unix timestamp in microseconds
+    /// Returns the current Unix timestamp in microseconds using monotonic clock for sub-ms precision
     private static func currentTimestampUs() -> Int64 {
-        return Int64(Date().timeIntervalSince1970 * 1_000_000)
+        let elapsedSeconds = ProcessInfo.processInfo.systemUptime - uptimeBaseSeconds
+        let elapsedUs = Int64(elapsedSeconds * 1_000_000)
+        return performanceOriginUs + elapsedUs
     }
 
     /// Adjusts a client μs timestamp to server time using the calculated offset
