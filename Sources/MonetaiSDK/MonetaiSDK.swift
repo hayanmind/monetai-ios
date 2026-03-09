@@ -167,7 +167,7 @@ private enum PendingEvent {
             return
         }
 
-        let timestamp = clientTimestampUs + serverTimeOffsetUs
+        let timestamp = toServerTimestampUs(clientTimestampUs)
         do {
             try await APIRequests.createEvent(
                 sdkKey: sdkKey,
@@ -207,7 +207,7 @@ private enum PendingEvent {
             return
         }
 
-        let timestamp = clientTimestampUs + serverTimeOffsetUs
+        let timestamp = toServerTimestampUs(clientTimestampUs)
         do {
             try await APIRequests.createViewProductItemEvent(
                 sdkKey: sdkKey,
@@ -315,6 +315,11 @@ private enum PendingEvent {
         return Int64(Date().timeIntervalSince1970 * 1_000_000)
     }
 
+    /// Adjusts a client μs timestamp to server time using the calculated offset
+    private func toServerTimestampUs(_ clientTimestampUs: Int64) -> Int64 {
+        return clientTimestampUs + serverTimeOffsetUs
+    }
+
     private func processPendingEvents() async {
         guard let sdkKey = sdkKey, let userId = userId else { return }
 
@@ -329,7 +334,7 @@ private enum PendingEvent {
             do {
                 switch event {
                 case .logEvent(let customEvent):
-                    let adjustedTimestampUs = customEvent.clientTimestampUs + serverTimeOffsetUs
+                    let adjustedTimestampUs = toServerTimestampUs(customEvent.clientTimestampUs)
 
                     try await APIRequests.createEvent(
                         sdkKey: sdkKey,
@@ -340,7 +345,7 @@ private enum PendingEvent {
                     )
 
                 case .viewProductItem(let viewEvent):
-                    let adjustedTimestampUs = viewEvent.clientTimestampUs + serverTimeOffsetUs
+                    let adjustedTimestampUs = toServerTimestampUs(viewEvent.clientTimestampUs)
 
                     try await APIRequests.createViewProductItemEvent(
                         sdkKey: sdkKey,
