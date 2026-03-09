@@ -154,10 +154,9 @@ private enum PendingEvent {
     /// - Parameter options: Event options to log
     @MainActor
     public func logEvent(_ options: LogEventOptions) async {
-        let timestampUs = Self.currentTimestampUs()
-
         guard let sdkKey = sdkKey, let userId = userId else {
             // Add to queue if SDK is not initialized
+            let timestampUs = Self.currentTimestampUs()
             pendingEvents.append(.logEvent(PendingCustomEvent(
                 eventName: options.eventName,
                 params: options.params,
@@ -171,8 +170,7 @@ private enum PendingEvent {
                 sdkKey: sdkKey,
                 userId: userId,
                 eventName: options.eventName,
-                params: options.params,
-                timestamp: timestampUs + serverTimeOffsetUs
+                params: options.params
             )
         } catch {
             print("[MonetaiSDK] Event logging failed: \(options.eventName), error: \(error)")
@@ -193,10 +191,9 @@ private enum PendingEvent {
     /// - Parameter params: Product view parameters
     @MainActor
     public func logViewProductItem(_ params: ViewProductItemParams) async {
-        let timestampUs = Self.currentTimestampUs()
-
         guard let sdkKey = sdkKey, let userId = userId else {
             // Add to queue if SDK is not initialized
+            let timestampUs = Self.currentTimestampUs()
             pendingEvents.append(.viewProductItem(PendingViewProductItemEvent(
                 params: params,
                 clientTimestampUs: timestampUs
@@ -208,8 +205,7 @@ private enum PendingEvent {
             try await APIRequests.createViewProductItemEvent(
                 sdkKey: sdkKey,
                 userId: userId,
-                params: params,
-                timestamp: timestampUs + serverTimeOffsetUs
+                params: params
             )
         } catch {
             print("[MonetaiSDK] View product item event failed: \(error)")
