@@ -154,23 +154,27 @@ private enum PendingEvent {
     /// - Parameter options: Event options to log
     @MainActor
     public func logEvent(_ options: LogEventOptions) async {
+        // 호출 시점에 즉시 타임스탬프 캡처
+        let clientTimestampUs = Self.currentTimestampUs()
+
         guard let sdkKey = sdkKey, let userId = userId else {
             // Add to queue if SDK is not initialized
-            let timestampUs = Self.currentTimestampUs()
             pendingEvents.append(.logEvent(PendingCustomEvent(
                 eventName: options.eventName,
                 params: options.params,
-                clientTimestampUs: timestampUs
+                clientTimestampUs: clientTimestampUs
             )))
             return
         }
 
+        let timestamp = clientTimestampUs + serverTimeOffsetUs
         do {
             try await APIRequests.createEvent(
                 sdkKey: sdkKey,
                 userId: userId,
                 eventName: options.eventName,
-                params: options.params
+                params: options.params,
+                timestamp: timestamp
             )
         } catch {
             print("[MonetaiSDK] Event logging failed: \(options.eventName), error: \(error)")
@@ -191,21 +195,25 @@ private enum PendingEvent {
     /// - Parameter params: Product view parameters
     @MainActor
     public func logViewProductItem(_ params: ViewProductItemParams) async {
+        // 호출 시점에 즉시 타임스탬프 캡처
+        let clientTimestampUs = Self.currentTimestampUs()
+
         guard let sdkKey = sdkKey, let userId = userId else {
             // Add to queue if SDK is not initialized
-            let timestampUs = Self.currentTimestampUs()
             pendingEvents.append(.viewProductItem(PendingViewProductItemEvent(
                 params: params,
-                clientTimestampUs: timestampUs
+                clientTimestampUs: clientTimestampUs
             )))
             return
         }
 
+        let timestamp = clientTimestampUs + serverTimeOffsetUs
         do {
             try await APIRequests.createViewProductItemEvent(
                 sdkKey: sdkKey,
                 userId: userId,
-                params: params
+                params: params,
+                timestamp: timestamp
             )
         } catch {
             print("[MonetaiSDK] View product item event failed: \(error)")
