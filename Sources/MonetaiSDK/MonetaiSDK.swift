@@ -326,26 +326,22 @@ private enum PendingEvent {
                 switch event {
                 case .logEvent(let customEvent):
                     let adjustedTimestampUs = customEvent.clientTimestampUs + serverTimeOffsetUs
-                    let createdAt = Date(timeIntervalSince1970: Double(adjustedTimestampUs) / 1_000_000)
 
                     try await APIRequests.createEvent(
                         sdkKey: sdkKey,
                         userId: userId,
                         eventName: customEvent.eventName,
                         params: customEvent.params,
-                        createdAt: createdAt,
                         timestamp: adjustedTimestampUs
                     )
 
                 case .viewProductItem(let viewEvent):
                     let adjustedTimestampUs = viewEvent.clientTimestampUs + serverTimeOffsetUs
-                    let createdAt = Date(timeIntervalSince1970: Double(adjustedTimestampUs) / 1_000_000)
 
                     try await APIRequests.createViewProductItemEvent(
                         sdkKey: sdkKey,
                         userId: userId,
                         params: viewEvent.params,
-                        createdAt: createdAt,
                         timestamp: adjustedTimestampUs
                     )
                 }
