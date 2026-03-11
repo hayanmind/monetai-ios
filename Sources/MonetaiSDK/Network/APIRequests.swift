@@ -47,7 +47,7 @@ struct APIRequests {
         let sdkKey: String
         let userId: String
         let eventName: String
-        let createdAt: Date?
+        let timestamp: Int64?
         let params: [String: Any]?
         let platform: String
 
@@ -59,10 +59,8 @@ struct APIRequests {
                 "platform": platform
             ]
 
-            if let createdAt = createdAt {
-                let formatter = ISO8601DateFormatter()
-                formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-                dict["createdAt"] = formatter.string(from: createdAt)
+            if let timestamp = timestamp {
+                dict["timestamp"] = timestamp
             }
 
             if let params = params {
@@ -77,12 +75,12 @@ struct APIRequests {
         }
     }
 
-    static func createEvent(sdkKey: String, userId: String, eventName: String, params: [String: Any]? = nil, createdAt: Date? = nil) async throws {
+    static func createEvent(sdkKey: String, userId: String, eventName: String, params: [String: Any]? = nil, timestamp: Int64? = nil) async throws {
         let request = EventRequest(
             sdkKey: sdkKey,
             userId: userId,
             eventName: eventName,
-            createdAt: createdAt,
+            timestamp: timestamp,
             params: params,
             platform: "ios"
         )
@@ -96,7 +94,7 @@ struct APIRequests {
     }
 
     // MARK: - View Product Item Event
-    static func createViewProductItemEvent(sdkKey: String, userId: String, params: ViewProductItemParams, createdAt: Date? = nil) async throws {
+    static func createViewProductItemEvent(sdkKey: String, userId: String, params: ViewProductItemParams, timestamp: Int64? = nil) async throws {
         var dict: [String: Any] = [
             "sdkKey": sdkKey,
             "userId": userId,
@@ -108,14 +106,12 @@ struct APIRequests {
             "platform": "ios"
         ]
 
-        if let month = params.month {
-            dict["month"] = month.intValue
+        if let timestamp = timestamp {
+            dict["timestamp"] = timestamp
         }
 
-        if let createdAt = createdAt {
-            let formatter = ISO8601DateFormatter()
-            formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-            dict["createdAt"] = formatter.string(from: createdAt)
+        if let month = params.month {
+            dict["month"] = month.intValue
         }
 
         let _: EmptyResponse = try await APIClient.shared.request(

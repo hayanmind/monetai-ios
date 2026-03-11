@@ -32,13 +32,13 @@ public extension LogEventOptions {
 private struct PendingCustomEvent {
     let eventName: String
     let params: [String: Any]?
-    let clientTimestamp: TimeInterval // Date().timeIntervalSince1970 * 1000
+    let clientTimestampUs: Int64 // Unix microseconds
 }
 
 /// Pending view product item event (logged before SDK initialization)
 private struct PendingViewProductItemEvent {
     let params: ViewProductItemParams
-    let clientTimestamp: TimeInterval
+    let clientTimestampUs: Int64 // Unix microseconds
 }
 
 /// Discriminated union for pending events
@@ -61,8 +61,8 @@ private enum PendingEvent {
     private var organizationId: Int = 0
     private var pendingEvents: [PendingEvent] = []
 
-    /// Server-client time offset in milliseconds (serverTimestamp - clientTimestamp)
-    private var serverTimeOffset: Int64 = 0
+    /// Server-client time offset in microseconds (serverTimestampUs - clientTimestampUs)
+    private var serverTimeOffsetUs: Int64 = 0
 
     // MARK: - Internal Properties for StoreKit
     internal var currentSDKKey: String? { return sdkKey }
@@ -131,10 +131,10 @@ private enum PendingEvent {
         // API initialization
         let initResponse = try await APIRequests.initialize(sdkKey: sdkKey)
 
-        // Store organization ID and calculate server-client time offset
+        // Store organization ID and calculate server-client time offset in microseconds
         self.organizationId = initResponse.organizationId
-        let clientTimestamp = Int64(Date().timeIntervalSince1970 * 1000)
-        self.serverTimeOffset = initResponse.serverTimestamp - clientTimestamp
+        let clientTimestampMs = Int64(Date().timeIntervalSince1970 * 1000)
+        self.serverTimeOffsetUs = (initResponse.serverTimestamp - clientTimestampMs) * 1000
 
         // Initialization complete
         isInitialized = true
@@ -154,22 +154,27 @@ private enum PendingEvent {
     /// - Parameter options: Event options to log
     @MainActor
     public func logEvent(_ options: LogEventOptions) async {
+        // 호출 시점에 즉시 타임스탬프 캡처
+        let clientTimestampUs = Self.currentTimestampUs()
+
         guard let sdkKey = sdkKey, let userId = userId else {
             // Add to queue if SDK is not initialized
             pendingEvents.append(.logEvent(PendingCustomEvent(
                 eventName: options.eventName,
                 params: options.params,
-                clientTimestamp: Date().timeIntervalSince1970 * 1000
+                clientTimestampUs: clientTimestampUs
             )))
             return
         }
 
+        let timestamp = toServerTimestampUs(clientTimestampUs)
         do {
             try await APIRequests.createEvent(
                 sdkKey: sdkKey,
                 userId: userId,
                 eventName: options.eventName,
-                params: options.params
+                params: options.params,
+                timestamp: timestamp
             )
         } catch {
             print("[MonetaiSDK] Event logging failed: \(options.eventName), error: \(error)")
@@ -190,20 +195,25 @@ private enum PendingEvent {
     /// - Parameter params: Product view parameters
     @MainActor
     public func logViewProductItem(_ params: ViewProductItemParams) async {
+        // 호출 시점에 즉시 타임스탬프 캡처
+        let clientTimestampUs = Self.currentTimestampUs()
+
         guard let sdkKey = sdkKey, let userId = userId else {
             // Add to queue if SDK is not initialized
             pendingEvents.append(.viewProductItem(PendingViewProductItemEvent(
                 params: params,
-                clientTimestamp: Date().timeIntervalSince1970 * 1000
+                clientTimestampUs: clientTimestampUs
             )))
             return
         }
 
+        let timestamp = toServerTimestampUs(clientTimestampUs)
         do {
             try await APIRequests.createViewProductItemEvent(
                 sdkKey: sdkKey,
                 userId: userId,
-                params: params
+                params: params,
+                timestamp: timestamp
             )
         } catch {
             print("[MonetaiSDK] View product item event failed: \(error)")
@@ -234,7 +244,7 @@ private enum PendingEvent {
         organizationId = 0
         isInitialized = false
         pendingEvents.removeAll()
-        serverTimeOffset = 0
+        serverTimeOffsetUs = 0
 
         // Stop StoreKit observation
         StoreKitManager.shared.stopObserving()
@@ -298,7 +308,27 @@ private enum PendingEvent {
         }
     }
 
+    // MARK: - Anchor + Monotonic Clock for μs precision
+
+    /// Wall-clock anchor captured at class load time (Unix microseconds, ms precision)
+    private static let performanceOriginUs: Int64 = Int64(Date().timeIntervalSince1970 * 1_000_000)
+
+    /// Monotonic clock anchor captured at class load time (seconds, sub-ms precision)
+    private static let uptimeBaseSeconds: Double = ProcessInfo.processInfo.systemUptime
+
     // MARK: - Private Methods
+
+    /// Returns the current Unix timestamp in microseconds using monotonic clock for sub-ms precision
+    private static func currentTimestampUs() -> Int64 {
+        let elapsedSeconds = ProcessInfo.processInfo.systemUptime - uptimeBaseSeconds
+        let elapsedUs = Int64(elapsedSeconds * 1_000_000)
+        return performanceOriginUs + elapsedUs
+    }
+
+    /// Adjusts a client μs timestamp to server time using the calculated offset
+    private func toServerTimestampUs(_ clientTimestampUs: Int64) -> Int64 {
+        return clientTimestampUs + serverTimeOffsetUs
+    }
 
     private func processPendingEvents() async {
         guard let sdkKey = sdkKey, let userId = userId else { return }
@@ -314,26 +344,24 @@ private enum PendingEvent {
             do {
                 switch event {
                 case .logEvent(let customEvent):
-                    let adjustedTimestamp = customEvent.clientTimestamp + Double(serverTimeOffset)
-                    let createdAt = Date(timeIntervalSince1970: adjustedTimestamp / 1000)
+                    let adjustedTimestampUs = toServerTimestampUs(customEvent.clientTimestampUs)
 
                     try await APIRequests.createEvent(
                         sdkKey: sdkKey,
                         userId: userId,
                         eventName: customEvent.eventName,
                         params: customEvent.params,
-                        createdAt: createdAt
+                        timestamp: adjustedTimestampUs
                     )
 
                 case .viewProductItem(let viewEvent):
-                    let adjustedTimestamp = viewEvent.clientTimestamp + Double(serverTimeOffset)
-                    let createdAt = Date(timeIntervalSince1970: adjustedTimestamp / 1000)
+                    let adjustedTimestampUs = toServerTimestampUs(viewEvent.clientTimestampUs)
 
                     try await APIRequests.createViewProductItemEvent(
                         sdkKey: sdkKey,
                         userId: userId,
                         params: viewEvent.params,
-                        createdAt: createdAt
+                        timestamp: adjustedTimestampUs
                     )
                 }
             } catch {
