@@ -442,7 +442,7 @@
     self.getOfferButton.enabled = NO;
     [self.loadingIndicator startAnimating];
 
-    [[MonetaiSDK shared] getOfferWithPromotionId:kPromotionId completion:^(Offer * _Nullable offer, NSError * _Nullable error) {
+    [[MonetaiSDK shared] getOfferWithPlacement:kPlacement completion:^(Offer * _Nullable offer, NSError * _Nullable error) {
         dispatch_async(dispatch_get_main_queue(), ^{
             self.isLoading = NO;
             self.getOfferButton.enabled = YES;
@@ -487,11 +487,11 @@
         }
 
         ViewProductItemParams *params = [[ViewProductItemParams alloc]
-            initWithProductId:pkg.storeProduct.productIdentifier
+            initWithPlacement:kPlacement
+                    productId:pkg.storeProduct.productIdentifier
                         price:pkg.storeProduct.price.doubleValue
                  regularPrice:basePackage.storeProduct.price.doubleValue
                  currencyCode:pkg.storeProduct.currencyCode ?: @"USD"
-                  promotionId:kPromotionId
                         month:month];
 
         [[MonetaiSDK shared] logViewProductItemWithParams:params];

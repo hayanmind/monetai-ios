@@ -211,10 +211,10 @@ private enum PendingEvent {
     }
 
     /// Get a dynamic pricing offer for a specific promotion
-    /// - Parameter promotionId: Promotion/campaign ID
+    /// - Parameter placement: Placement identifier for the promotion
     /// - Returns: Offer with agent info and products, or nil if no match
     @MainActor
-    public func getOffer(promotionId: Int) async throws -> Offer? {
+    public func getOffer(placement: String) async throws -> Offer? {
         guard let sdkKey = sdkKey, let userId = userId else {
             throw MonetaiError.notInitialized
         }
@@ -222,7 +222,7 @@ private enum PendingEvent {
         return try await APIRequests.getOffer(
             sdkKey: sdkKey,
             userId: userId,
-            promotionId: promotionId
+            placement: placement
         )
     }
 
@@ -287,10 +287,10 @@ private enum PendingEvent {
     }
 
     /// Get offer (Objective-C compatible)
-    @objc public func getOfferWithPromotionId(_ promotionId: Int, completion: @escaping (Offer?, Error?) -> Void) {
+    @objc public func getOfferWithPlacement(_ placement: String, completion: @escaping (Offer?, Error?) -> Void) {
         Task {
             do {
-                let offer = try await getOffer(promotionId: promotionId)
+                let offer = try await getOffer(placement: placement)
                 completion(offer, nil)
             } catch {
                 completion(nil, error)

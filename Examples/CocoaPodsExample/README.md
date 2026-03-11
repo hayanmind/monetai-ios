@@ -55,7 +55,7 @@ open CocoaPodsExample.xcworkspace
        static let sdkKey = "your-sdk-key-here"
        static let userId = "example-user-id"
        static let useStoreKit2 = true
-       static let promotionId = 6
+       static let placement = "your-placement-here"
        static let defaultProductId = "your-default-product-id-here"
 
        static let revenueCatAPIKey = "your-revenuecat-api-key-here"
@@ -110,7 +110,7 @@ let result = try await monetaiSDK.initialize(
 ### Get Offer (Dynamic Pricing)
 
 ```swift
-let offer = try await monetaiSDK.getOffer(promotionId: promotionId)
+let offer = try await monetaiSDK.getOffer(placement: placement)
 // offer.agentName - the matched agent
 // offer.products  - array of OfferProduct with sku, name, discountRate
 ```
@@ -127,11 +127,11 @@ await monetaiSDK.logEvent(eventName: "app_launched", params: [
 
 ```swift
 await monetaiSDK.logViewProductItem(ViewProductItemParams(
+    placement: placement,
     productId: product.sku,
     price: discountedPrice,
     regularPrice: regularPrice,
-    currencyCode: "USD",
-    promotionId: promotionId
+    currencyCode: "USD"
 ))
 ```
 
