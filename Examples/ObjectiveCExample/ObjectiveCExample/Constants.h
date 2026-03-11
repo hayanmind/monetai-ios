@@ -11,7 +11,7 @@
 extern NSString * const kSDKKey;
 extern NSString * const kUserId;
 extern BOOL const kUseStoreKit2;
-extern NSInteger const kPromotionId;
+extern NSString * const kPlacement;
 extern NSString * const kDefaultProductId;
 
 // MARK: - RevenueCat Configuration
